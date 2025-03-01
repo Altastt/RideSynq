@@ -3,13 +3,8 @@ package com.example.ridesynq.models
 import com.example.ridesynq.R
 
 sealed class NavigationItems(var route: String, var icon: Int, var title: String) {
-    object Home : NavigationItems("home", R.drawable.home, "Home")
-    object Books : NavigationItems("books", R.drawable.book, "Books")
-    object Camera : NavigationItems("camera", R.drawable.camera, "Camera")
-    object Bookmarks : NavigationItems("bookmarks", R.drawable.bookmark, "Bookmarks")
+    object Trip : NavigationItems("trip", R.drawable.trip, "Trip")
+    object Search : NavigationItems("search", R.drawable.search, "Search")
+    object Chat : NavigationItems("chat", R.drawable.chat, "Chat")
     object Profile : NavigationItems("profile", R.drawable.profile, "Profile")
-    object Post : NavigationItems("post", R.drawable.profile, "Post")
-    object CameraInProfile : NavigationItems("camerainprofile", R.drawable.camera, "CameraInProfile")
-    object CameraInMain : NavigationItems("camerainmain", R.drawable.camera, "CameraInMain")
-    object Gallery : NavigationItems("gallery", R.drawable.camera, "Gallery")
 }

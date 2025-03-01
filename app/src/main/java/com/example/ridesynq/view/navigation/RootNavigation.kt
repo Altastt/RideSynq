@@ -5,8 +5,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.visionbook.view.MainScreen
-import com.example.visionbook.viewmodels.AuthVM
+import com.example.ridesynq.view.MainScreen
+import com.example.ridesynq.viewmodel.AuthVM
+
 
 @Composable
 fun RootNavigation(navController: NavHostController, onThemeUpdated: () -> Unit) {
@@ -28,5 +29,5 @@ object GraphRoute {
     const val AUTHENTICATION = "authentication_graph"
     const val MAIN = "main_graph"
     const val PROFILE = "profile_graph"
-    const val SETTINGS = "settings_graph"
+    const val RIDE = "ride_graph"
 }

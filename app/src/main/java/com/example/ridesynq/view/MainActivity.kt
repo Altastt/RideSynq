@@ -14,13 +14,13 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.ridesynq.ui.theme.RideSynqTheme
 import com.example.ridesynq.view.navigation.MainNavigation
 import com.example.ridesynq.view.navigation.RootNavigation
 import com.example.ridesynq.viewmodel.AuthVM
+import com.yandex.mapkit.MapKitFactory
 
 
 class MainActivity : ComponentActivity() {
@@ -34,6 +34,17 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onStart() {
+        super.onStart()
+        MapKitFactory.getInstance().onStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        MapKitFactory.getInstance().onStop()
+    }
+
 }
 
 
@@ -49,33 +60,18 @@ fun MainScreen(onThemeUpdated: () -> Unit, authViewModel: AuthVM) {
 
 
     when (navBackStackEntry?.destination?.route) {
-        "home" -> {
-            topBarState.value = true
-            bottomBarState.value = true
-        }
-
-        "books" -> {
-            topBarState.value = true
-            bottomBarState.value = true
-        }
-
-        "camerainprofile" -> {
+        "trip" -> {
             topBarState.value = false
             bottomBarState.value = true
         }
 
-        "camerainmain" -> {
+        "search" -> {
             topBarState.value = false
             bottomBarState.value = true
         }
 
-        "camera" -> {
+        "chat" -> {
             topBarState.value = false
-            bottomBarState.value = false
-        }
-
-        "bookmarks" -> {
-            topBarState.value = true
             bottomBarState.value = true
         }
 
@@ -84,15 +80,6 @@ fun MainScreen(onThemeUpdated: () -> Unit, authViewModel: AuthVM) {
             bottomBarState.value = true
         }
 
-        "post" -> {
-            topBarState.value = false
-            bottomBarState.value = true
-        }
-
-        "cameraforprofile" -> {
-            topBarState.value = false
-            bottomBarState.value = false
-        }
         else -> {
             topBarState.value = false
             bottomBarState.value = false
@@ -100,7 +87,7 @@ fun MainScreen(onThemeUpdated: () -> Unit, authViewModel: AuthVM) {
     }
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = { AnimatedTopNavigationBar(navController, topBarState, scrollBehavior, viewModel()) },
+        topBar = { AnimatedTopNavigationBar(navController, topBarState, scrollBehavior) },
         content = {
                 MainNavigation(navController, onThemeUpdated, authViewModel)
         },

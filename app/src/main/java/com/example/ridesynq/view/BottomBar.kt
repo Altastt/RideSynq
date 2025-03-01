@@ -17,7 +17,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.visionbook.models.NavigationItems
+import com.example.ridesynq.models.NavigationItems
+
 
 @Composable
 fun AnimatedBottomNavigationBar(
@@ -36,10 +37,9 @@ fun AnimatedBottomNavigationBar(
 @Composable
 private fun BottomNavigationBar(navController: NavController) {
     val items = listOf(
-        NavigationItems.Home,
-        NavigationItems.Books,
-        NavigationItems.CameraInMain,
-        NavigationItems.Bookmarks,
+        NavigationItems.Trip,
+        NavigationItems.Search,
+        NavigationItems.Chat,
         NavigationItems.Profile,
     )
     NavigationBar(

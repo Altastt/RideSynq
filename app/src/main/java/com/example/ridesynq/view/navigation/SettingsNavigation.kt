@@ -4,16 +4,15 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.example.visionbook.models.NavigationItems
-import com.example.visionbook.view.camerasBookNProfile.secondCameraScreens.PreProfileCameraScreen
-import com.example.visionbook.view.settingsScreen.*
-import com.example.visionbook.viewmodels.AuthVM
+import com.example.ridesynq.viewmodel.AuthVM
+
 
 fun NavGraphBuilder.settingsNavigation(navController: NavHostController, authViewModel: AuthVM) {
     navigation(
-        route = GraphRoute.SETTINGS,
+        route = GraphRoute.RIDE,
         startDestination = SettingsScreen.ProfileSettings.route
     ) {
+        /*
         composable(SettingsScreen.ProfileSettings.route) {
             ProfileSettingsScreen(navController)
         }
@@ -23,18 +22,10 @@ fun NavGraphBuilder.settingsNavigation(navController: NavHostController, authVie
         composable(SettingsScreen.Security.route) {
             SecurityScreen(navController)
         }
-        // переделать под задел на подписки в будущем
-        composable(SettingsScreen.Language.route) {
-            LanguageScreen(navController)
-        }
-        composable(SettingsScreen.FAQ.route) {
-            FAQScreen(navController)
-        }
 
-        composable(NavigationItems.CameraInProfile.route) {
-            PreProfileCameraScreen(navController)
-        }
         authNavigation(navController, authViewModel)
+
+         */
     }
 }
 

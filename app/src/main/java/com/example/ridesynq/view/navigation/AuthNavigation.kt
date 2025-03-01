@@ -4,10 +4,11 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.example.visionbook.view.authScreens.ForgotScreen
-import com.example.visionbook.view.authScreens.LoginScreen
-import com.example.visionbook.view.authScreens.RegistrationScreen
-import com.example.visionbook.viewmodels.AuthVM
+import com.example.ridesynq.view.authScreens.ForgotScreen
+import com.example.ridesynq.view.authScreens.LoginScreen
+import com.example.ridesynq.view.authScreens.RegistrationScreen
+import com.example.ridesynq.viewmodel.AuthVM
+
 
 fun NavGraphBuilder.authNavigation(navController: NavHostController, authViewModel: AuthVM) {
     navigation(
