@@ -39,7 +39,6 @@ private fun BottomNavigationBar(navController: NavController) {
     val items = listOf(
         NavigationItems.Trip,
         NavigationItems.Search,
-        NavigationItems.Chat,
         NavigationItems.Profile,
     )
     NavigationBar(

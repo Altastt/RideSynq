@@ -1,12 +1,9 @@
 package com.example.ridesynq
 
 import android.app.Application
-import com.yandex.mapkit.MapKit
 import com.yandex.mapkit.MapKitFactory
-import com.yandex.mapkit.mapview.MapView
+import com.yandex.mapkit.directions.DirectionsFactory
 
-private lateinit var mapKit: MapKit
-private lateinit var mapView: MapView
 
 class RideSynqApp : Application() {
     override fun onCreate() {
@@ -14,5 +11,6 @@ class RideSynqApp : Application() {
 
         MapKitFactory.setApiKey(BuildConfig.MAPKIT_API_KEY)
         MapKitFactory.initialize(this)
+        DirectionsFactory.initialize(this)
     }
 }

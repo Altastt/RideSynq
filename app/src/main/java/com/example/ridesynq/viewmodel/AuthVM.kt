@@ -1,13 +1,11 @@
 package com.example.ridesynq.viewmodel
 
-import android.util.Log
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import java.time.LocalTime
 
 class AuthVM : ViewModel() {
 
@@ -18,7 +16,12 @@ class AuthVM : ViewModel() {
     val passwordState: LiveData<String> = _passwordState
     private val _secondPasswordState = MutableLiveData<String>()
     val secondPasswordState: LiveData<String> = _secondPasswordState
+    private val _departureTime = mutableStateOf<LocalTime?>(null)
+    val departureTime: State<LocalTime?> = _departureTime
 
+    fun setDepartureTime(time: LocalTime) {
+        _departureTime.value = time
+    }
 
     private val _tokenState = MutableLiveData<String>()
     val tokenState: LiveData<String> = _tokenState

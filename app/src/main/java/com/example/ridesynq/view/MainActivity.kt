@@ -2,9 +2,11 @@ package com.example.ridesynq.view
 
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -48,6 +50,7 @@ class MainActivity : ComponentActivity() {
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -66,11 +69,6 @@ fun MainScreen(onThemeUpdated: () -> Unit, authViewModel: AuthVM) {
         }
 
         "search" -> {
-            topBarState.value = false
-            bottomBarState.value = true
-        }
-
-        "chat" -> {
             topBarState.value = false
             bottomBarState.value = true
         }
