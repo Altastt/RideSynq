@@ -1,9 +1,9 @@
 package com.example.ridesynq.data.database
 
 import androidx.room.TypeConverter
-import java.sql.Date
+import java.util.Date
 
-class Converters {
+class RoomConverters {
     @TypeConverter
     fun fromTimestamp(value: Long?): Date? = value?.let { Date(it) }
 

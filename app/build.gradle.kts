@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("kotlin-kapt")
+    id("com.google.devtools.ksp")
 }
 val properties = Properties().apply {
     val localProperties = project.rootProject.file("local.properties")
@@ -90,6 +90,6 @@ dependencies {
     implementation (libs.play.services.location)
 
     implementation (libs.androidx.room.runtime)
-    kapt(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
 }

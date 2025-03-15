@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.Companion.CASCADE
+import androidx.room.Index
 
 @Entity(
     tableName = "user_trip",
@@ -21,6 +22,10 @@ import androidx.room.ForeignKey.Companion.CASCADE
             childColumns = ["trip_id"],
             onDelete = CASCADE
         )
+    ],
+    indices = [
+        Index("user_id"),
+        Index("trip_id") // Добавляем индекс
     ]
 )
 data class UserTrip(
