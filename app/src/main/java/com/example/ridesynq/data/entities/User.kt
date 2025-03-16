@@ -1,5 +1,6 @@
 package com.example.ridesynq.data.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.Companion.CASCADE
@@ -35,5 +36,11 @@ data class User(
     val surname: String?,
     val phone: String,
     val transport_name: String?,
-    val transport_number: String?
+    val transport_number: String?,
+
+    @ColumnInfo(name = "login")
+    val login: String,
+
+    @ColumnInfo(name = "password")
+    val password: String
 )

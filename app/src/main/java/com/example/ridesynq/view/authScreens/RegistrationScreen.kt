@@ -14,6 +14,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -30,6 +31,7 @@ import androidx.navigation.NavController
 import com.example.ridesynq.R
 import com.example.ridesynq.models.AutoresizedText
 import com.example.ridesynq.view.BackButton
+import com.example.ridesynq.view.TextFieldCustom
 import com.example.ridesynq.view.TextFieldEmail
 import com.example.ridesynq.view.TextFieldPass
 import com.example.ridesynq.viewmodel.AuthVM
@@ -40,14 +42,18 @@ import com.example.ridesynq.viewmodel.AuthVM
 fun RegistrationScreen(
     navController: NavController,
     authViewModel: AuthVM,
-   // retrofitViewModel: RetrofitVM = viewModel()
+
 ) {
     val context = LocalContext.current
-    //val authApi = retrofitViewModel.retrofit.create(AuthApi::class.java)
+
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
     val secondPasswordState = remember { mutableStateOf("") }
     var passwordsMatchState by remember { mutableStateOf(false) }
+
+    val firstName = remember { mutableStateOf("") }
+    val lastName = remember { mutableStateOf("") }
+    val surname = remember { mutableStateOf("") }
 
     val checkEmailPass = stringResource(R.string.check_email_pass)
     val checkPrivacyPolicy = stringResource(R.string.check_privacypolicy)
@@ -71,7 +77,7 @@ fun RegistrationScreen(
         onDispose {
             authViewModel.emailState.removeObserver(observerEmailState)
             authViewModel.passwordState.removeObserver(observerPasswordState)
-            authViewModel.secondPasswordState.observeForever(observerSecondPasswordState)
+            authViewModel.secondPasswordState.removeObserver(observerSecondPasswordState)
         }
     }
     var checked by remember {
@@ -90,7 +96,25 @@ fun RegistrationScreen(
                 .fillMaxWidth()
                 .padding(bottom = 80.dp)
         ) { BackButton(navController) }
+        // Поля ФИО
+        TextField(
+            value = firstName.value,
+            onValueChange = { firstName.value = it },
+            label = { Text("Имя") }
+        )
 
+        TextField(
+            value = lastName.value,
+            onValueChange = { lastName.value = it },
+            label = { Text("Фамилия") }
+        )
+
+        TextField(
+            value = surname.value,
+            onValueChange = { surname.value = it },
+            label = { Text("Отчество") },
+
+        )
         AutoresizedText(
             stringResource(R.string.sign_up_title),
             style = MaterialTheme.typography.displayLarge,
@@ -139,54 +163,23 @@ fun RegistrationScreen(
                 style = MaterialTheme.typography.titleSmall
             )
         }
-        Button(
-            onClick = {
-                if (passwordsMatchState && passwordState.value != "" && emailState.value != "" && checked) {
-                    /*
-                    CoroutineScope(Dispatchers.IO).launch {
-                        authViewModel.registration(emailState.value, passwordState.value, authApi)
-                        sleep(1000)
-                    }
-                    CoroutineScope(Dispatchers.IO).launch {
-                        authViewModel.authorization(emailState.value, passwordState.value, authApi)
-                    }
-                    navController.navigate(GraphRoute.MAIN) {
-                        navController.popBackStack(AuthScreen.Login.route, true)
-                    } */
-                } else if (passwordState.value == "" || emailState.value == "") {
-                    Toast.makeText(
-                        context,
-                        checkEmailPass,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else if (checked == false) {
-                    Toast.makeText(
-                        context,
-                        checkPrivacyPolicy,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else {
-                    Toast.makeText(
-                        context,
-                        matchPass,
-                        Toast.LENGTH_SHORT
-                    ).show()
+        Button(onClick = {
+            viewModelScope.launch {
+                when(val result = authViewModel.registerUser(
+                    firstName.value,
+                    lastName.value,
+                    surname.value,
+                    emailState.value,
+                    passwordState.value
+                )) {
+                    is Result.Success -> navController.popBackStack()
+                    is Result.Failure -> showError(result.exception.message)
                 }
-            },
-            shape = RoundedCornerShape(30),
-            modifier = Modifier
-                .width(140.dp)
-                .height(80.dp)
-                .padding(top = 30.dp),
-
-            ) {
-            AutoresizedText(
-                stringResource(R.string.sign_in_tb_to_signup),
-                style = MaterialTheme.typography.labelMedium
-            )
+            }
+        }) {
+            Text("Зарегистрироваться")
         }
 
     }
-
 
 }

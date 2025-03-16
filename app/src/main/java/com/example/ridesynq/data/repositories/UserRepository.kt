@@ -21,4 +21,10 @@ class UserRepository(
     fun getUsersByCompany(companyId: Int): Flow<List<User>> {
         return userDao.getUsersByCompany(companyId)
     }
+
+    suspend fun isLoginUnique(login: String) =
+        !userDao.isLoginExists(login)
+
+    suspend fun validateCredentials(login: String, password: String) =
+        userDao.getUserByCredentials(login, password)
 }

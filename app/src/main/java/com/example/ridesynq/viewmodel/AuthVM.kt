@@ -5,9 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.ridesynq.data.entities.User
+import com.example.ridesynq.data.repositories.UserRepository
 import java.time.LocalTime
 
-class AuthVM : ViewModel() {
+class AuthVM(private val userRepository: UserRepository) : ViewModel() {
 
 
     private val _emailState = MutableLiveData<String>()
@@ -36,47 +38,47 @@ class AuthVM : ViewModel() {
     private fun setToken(token: String) {
         _tokenState.value = token
     }
-/*
-    suspend fun registration(email: String, password: String,) { // authApi: AuthApi) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                withContext(Dispatchers.Main) {
-                    authApi.userRegistration(
-                        RegistrationModel(
-                            email,
-                            password
-                        )
-                    )
-                }
-            } catch (e: Exception) {
-                // Обработка ошибок
-                e.printStackTrace()
+    // Регистрация
+    suspend fun registerUser(
+        firstName: String,
+        lastName: String,
+        surname: String?,
+        login: String,
+        password: String
+    ): Result<Unit> {
+        return try {
+            if (userRepository.isLoginUnique(login)) {
+                val user = User(
+                    firstname = firstName,
+                    lastname = lastName,
+                    surname = surname,
+                    login = login,
+                    password = password,
+                    company_id = 1, // Временные значения
+                    post_id = 1,
+                    phone = "",
+                    transport_name = null,
+                    transport_number = null
+                )
+                userRepository.createUser(user)
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Логин уже занят"))
             }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 
-    suspend fun authorization(email: String, password: String,) { //authApi: AuthApi) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-
-                withContext(Dispatchers.Main) {
-                   // val userToken = authApi.userLogin(
-                     //   RegistrationModel(
-                     //       email,
-                      //      password
-                      //  )
-
-                   // )
-                  //  Log.d("ВЕРНИ ТОКЕН ЗАРАЗА", userToken.token)
-                    // Установка токена после успешной аутентификации
-                   // setToken(userToken.token)
-                }
-            } catch (e: Exception) {
-                // Обработка ошибок
-                e.printStackTrace()
-            }
+    // Авторизация
+    suspend fun loginUser(login: String, password: String): Result<User> {
+        return try {
+            val user = userRepository.validateCredentials(login, password)
+            user?.let {
+                Result.success(it)
+            } ?: Result.failure(Exception("Неверные учетные данные"))
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
-
-*/
 }
