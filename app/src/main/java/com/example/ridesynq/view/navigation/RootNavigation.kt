@@ -1,7 +1,8 @@
 package com.example.ridesynq.view.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -9,18 +10,18 @@ import com.example.ridesynq.view.MainScreen
 import com.example.ridesynq.viewmodel.AuthVM
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun RootNavigation(navController: NavHostController, onThemeUpdated: () -> Unit) {
-    val authViewModel: AuthVM = viewModel()
+fun RootNavigation(navController: NavHostController, onThemeUpdated: () -> Unit, authVM: AuthVM) {
     NavHost(
         navController = navController,
         route = GraphRoute.ROOT,
         startDestination = GraphRoute.AUTHENTICATION
     ) {
         composable(GraphRoute.MAIN){
-            MainScreen(onThemeUpdated, authViewModel)
+            MainScreen(onThemeUpdated, authVM)
         }
-        authNavigation(navController, authViewModel)
+        authNavigation(navController, authVM)
     }
 }
 

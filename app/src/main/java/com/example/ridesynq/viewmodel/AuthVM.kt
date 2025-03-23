@@ -1,16 +1,26 @@
 package com.example.ridesynq.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.ridesynq.BuildConfig
 import com.example.ridesynq.data.entities.User
 import com.example.ridesynq.data.repositories.UserRepository
 import java.time.LocalTime
 
 class AuthVM(private val userRepository: UserRepository) : ViewModel() {
-
+    init {
+        if (BuildConfig.DEBUG) {
+            Log.d("AuthVM", "ViewModel initialized")
+        }
+    }
+    sealed class RegistrationResult {
+        object Success : RegistrationResult()
+        data class Error(val message: String) : RegistrationResult()
+    }
 
     private val _emailState = MutableLiveData<String>()
     val emailState: LiveData<String> = _emailState
@@ -45,7 +55,7 @@ class AuthVM(private val userRepository: UserRepository) : ViewModel() {
         surname: String?,
         login: String,
         password: String
-    ): Result<Unit> {
+    ): RegistrationResult {
         return try {
             if (userRepository.isLoginUnique(login)) {
                 val user = User(
@@ -54,19 +64,19 @@ class AuthVM(private val userRepository: UserRepository) : ViewModel() {
                     surname = surname,
                     login = login,
                     password = password,
-                    company_id = 1, // Временные значения
+                    company_id = 1,
                     post_id = 1,
                     phone = "",
                     transport_name = null,
                     transport_number = null
                 )
                 userRepository.createUser(user)
-                Result.success(Unit)
+                RegistrationResult.Success
             } else {
-                Result.failure(Exception("Логин уже занят"))
+                RegistrationResult.Error("Логин уже занят")
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            RegistrationResult.Error(e.message ?: "Неизвестная ошибка")
         }
     }
 

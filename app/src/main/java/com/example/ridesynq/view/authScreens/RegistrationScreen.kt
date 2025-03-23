@@ -20,6 +20,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,7 +36,7 @@ import com.example.ridesynq.view.TextFieldCustom
 import com.example.ridesynq.view.TextFieldEmail
 import com.example.ridesynq.view.TextFieldPass
 import com.example.ridesynq.viewmodel.AuthVM
-
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -45,7 +46,8 @@ fun RegistrationScreen(
 
 ) {
     val context = LocalContext.current
-
+    val coroutineScope = rememberCoroutineScope()
+    val errorMessage = remember { mutableStateOf<String?>(null) }
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
     val secondPasswordState = remember { mutableStateOf("") }
@@ -164,16 +166,19 @@ fun RegistrationScreen(
             )
         }
         Button(onClick = {
-            viewModelScope.launch {
-                when(val result = authViewModel.registerUser(
+            coroutineScope.launch {
+                when (val result = authViewModel.registerUser(
                     firstName.value,
                     lastName.value,
                     surname.value,
                     emailState.value,
                     passwordState.value
                 )) {
-                    is Result.Success -> navController.popBackStack()
-                    is Result.Failure -> showError(result.exception.message)
+                    is AuthVM.RegistrationResult.Success -> navController.popBackStack()
+                    is AuthVM.RegistrationResult.Error -> {
+                        errorMessage.value = result.message
+                        Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
+                    }
                 }
             }
         }) {
