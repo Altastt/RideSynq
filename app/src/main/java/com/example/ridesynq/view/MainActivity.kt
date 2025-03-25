@@ -17,15 +17,19 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.ridesynq.data.database.AppDatabase
+import com.example.ridesynq.data.repositories.CompanyRepository
 import com.example.ridesynq.data.repositories.UserRepository
 import com.example.ridesynq.ui.theme.RideSynqTheme
 import com.example.ridesynq.view.navigation.MainNavigation
 import com.example.ridesynq.view.navigation.RootNavigation
 import com.example.ridesynq.viewmodel.AuthVM
 import com.example.ridesynq.viewmodel.AuthVMFactory
+import com.example.ridesynq.viewmodel.CompanyVMFactory
+import com.example.ridesynq.viewmodel.CompanyViewModel
 import com.yandex.mapkit.MapKitFactory
 
 
@@ -37,8 +41,14 @@ class MainActivity : ComponentActivity() {
             appDatabase.companyDao()
         )
     }
+    private val companyRepository by lazy {
+        CompanyRepository(appDatabase.companyDao())
+    }
     private val authVM: AuthVM by viewModels {
         AuthVMFactory(userRepository)
+    }
+    private val companyVM: CompanyViewModel by viewModels {
+        CompanyVMFactory(companyRepository)
     }
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,7 +57,12 @@ class MainActivity : ComponentActivity() {
             val darkThemeNow = isSystemInDarkTheme()
             var darkTheme by remember { mutableStateOf(darkThemeNow) }
             RideSynqTheme (darkTheme = darkTheme) {
-                RootNavigation(navController = rememberNavController(), onThemeUpdated = { darkTheme = !darkTheme }, authVM = authVM)
+                RootNavigation(
+                    navController = rememberNavController(),
+                    onThemeUpdated = { darkTheme = !darkTheme },
+                    authVM = authVM,
+                    companyVM = companyVM
+                )
             }
         }
     }

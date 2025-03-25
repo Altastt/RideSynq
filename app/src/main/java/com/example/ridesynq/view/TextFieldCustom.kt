@@ -25,16 +25,9 @@ import com.example.ridesynq.models.AutoresizedText
 @Composable
 fun TextFieldCustom(
     placeholder: String,
-    author: Boolean = false,
-    genre: Boolean = false,
-    titleState: MutableState<String>,
-    authorState: MutableState<String>,
-    genreState: MutableState<String>,
+    stringState: MutableState<String>,
     onValueChange: (String) -> Unit
 ) {
-    val stringState = if (author) authorState
-    else if (genre) genreState
-    else titleState
     TextField(
         value = stringState.value,
         singleLine = true,
@@ -45,7 +38,7 @@ fun TextFieldCustom(
                 Icon(
                     painterResource(R.drawable.close),
                     "close",
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(12.dp)
                 )
             }
         },

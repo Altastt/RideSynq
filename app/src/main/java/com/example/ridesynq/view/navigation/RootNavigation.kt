@@ -8,11 +8,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.ridesynq.view.MainScreen
 import com.example.ridesynq.viewmodel.AuthVM
+import com.example.ridesynq.viewmodel.CompanyViewModel
 
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun RootNavigation(navController: NavHostController, onThemeUpdated: () -> Unit, authVM: AuthVM) {
+fun RootNavigation(navController: NavHostController, onThemeUpdated: () -> Unit, authVM: AuthVM, companyVM: CompanyViewModel) {
     NavHost(
         navController = navController,
         route = GraphRoute.ROOT,
@@ -21,7 +22,7 @@ fun RootNavigation(navController: NavHostController, onThemeUpdated: () -> Unit,
         composable(GraphRoute.MAIN){
             MainScreen(onThemeUpdated, authVM)
         }
-        authNavigation(navController, authVM)
+        authNavigation(navController, authVM, companyVM)
     }
 }
 

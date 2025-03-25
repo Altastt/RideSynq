@@ -29,8 +29,20 @@
     <string name="sign_in_text_to_signup">У вас еще нет аккаунта?</string>
     <string name="sign_in_tb_to_signup">Создать</string>
 
+
+    <string name="sign_up_lastname">Фамилия</string>
+    <string name="sign_up_firstname">Имя</string>
+    <string name="sign_up_surname">Отчество</string>
     <string name="sign_up_title">Создайте аккаунт</string>
     <string name="sign_up_confidence">Я согласен с условиями политики конфиденциальности</string>
+    <string name="sign_up_button">Зарегистрироваться</string>
+    <string name="sign_up_company_title">Создайте аккаунт компании</string>
+    <string name="sign_up_company_button">Зарегистрировать компанию</string>
+    <string name="sign_up_company_name">Название компании</string>
+    <string name="sign_up_company_inn">ИНН</string>
+    <string name="sign_up_company_kpp">КПП</string>
+    <string name="sign_up_company_ogrn">ОГРН</string>
+
 
     <string name="forgot_title">Восстановление пароля</string>
     <string name="forgot_text">Укажите почту, на которую вам придет ссылка для восстановления пароля</string>

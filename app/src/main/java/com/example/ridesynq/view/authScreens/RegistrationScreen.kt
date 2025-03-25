@@ -12,9 +12,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -24,7 +27,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Observer
@@ -35,6 +40,7 @@ import com.example.ridesynq.view.BackButton
 import com.example.ridesynq.view.TextFieldCustom
 import com.example.ridesynq.view.TextFieldEmail
 import com.example.ridesynq.view.TextFieldPass
+import com.example.ridesynq.view.navigation.AuthScreen
 import com.example.ridesynq.viewmodel.AuthVM
 import kotlinx.coroutines.launch
 
@@ -57,9 +63,6 @@ fun RegistrationScreen(
     val lastName = remember { mutableStateOf("") }
     val surname = remember { mutableStateOf("") }
 
-    val checkEmailPass = stringResource(R.string.check_email_pass)
-    val checkPrivacyPolicy = stringResource(R.string.check_privacypolicy)
-    val matchPass = stringResource(R.string.match_pass)
     DisposableEffect(authViewModel) {
 
         val observerEmailState = Observer<String> { _emailState ->
@@ -96,33 +99,33 @@ fun RegistrationScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 80.dp)
+                .padding(bottom = 30.dp)
         ) { BackButton(navController) }
-        // Поля ФИО
-        TextField(
-            value = firstName.value,
-            onValueChange = { firstName.value = it },
-            label = { Text("Имя") }
-        )
 
-        TextField(
-            value = lastName.value,
-            onValueChange = { lastName.value = it },
-            label = { Text("Фамилия") }
-        )
-
-        TextField(
-            value = surname.value,
-            onValueChange = { surname.value = it },
-            label = { Text("Отчество") },
-
-        )
         AutoresizedText(
             stringResource(R.string.sign_up_title),
             style = MaterialTheme.typography.displayLarge,
-            modifier = Modifier.padding(bottom = 110.dp)
+            modifier = Modifier.padding(bottom = 50.dp)
         )
-
+        // Поля ФИО
+        TextFieldCustom(
+            stringResource(R.string.sign_up_lastname),
+            lastName,
+            onValueChange = { newValue -> lastName.value = newValue }
+        )
+        Spacer(modifier = Modifier.height(15.dp))
+        TextFieldCustom(
+            stringResource(R.string.sign_up_firstname),
+            firstName,
+            onValueChange = { newValue -> firstName.value = newValue }
+        )
+        Spacer(modifier = Modifier.height(15.dp))
+        TextFieldCustom(
+            stringResource(R.string.sign_up_surname),
+            surname,
+            onValueChange = { newValue -> surname.value = newValue }
+        )
+        Spacer(modifier = Modifier.height(15.dp))
         TextFieldEmail(
             stringResource(R.string.sign_in_email),
             emailState,
@@ -145,10 +148,8 @@ fun RegistrationScreen(
                 updatePasswordMatchState()
             },
         )
-
-
         Row(
-            modifier = Modifier.padding(start = 30.dp, top = 30.dp),
+            modifier = Modifier.padding(start = 30.dp, top = 30.dp, bottom = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(
@@ -181,10 +182,21 @@ fun RegistrationScreen(
                     }
                 }
             }
-        }) {
-            Text("Зарегистрироваться")
+        },
+            modifier = Modifier.padding(bottom = 10.dp)) {
+            AutoresizedText(
+                stringResource(R.string.sign_up_button),
+                style = MaterialTheme.typography.labelMedium
+            )
         }
-
+        Button(onClick = {
+            navController.navigate(AuthScreen.CompanyRegistration.route)
+        }) {
+            AutoresizedText(
+                stringResource(R.string.sign_up_company_button),
+                style = MaterialTheme.typography.labelMedium
+            )
+        }
     }
 
 }
