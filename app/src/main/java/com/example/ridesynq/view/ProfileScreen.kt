@@ -1,188 +1,239 @@
 package com.example.ridesynq.view
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.example.ridesynq.R
-import com.example.ridesynq.models.AutoresizedText
+import com.example.ridesynq.view.navigation.AuthScreen // Для навигации на логин после выхода
 import com.example.ridesynq.view.navigation.GraphRoute
+import com.example.ridesynq.view.navigation.SettingsScreen
 import com.example.ridesynq.viewmodel.AuthVM
-import com.example.ridesynq.viewmodel.ProfileScreenVM
+import com.yandex.runtime.image.ImageProvider
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     navController: NavController,
     onThemeUpdated: () -> Unit,
-    viewModel: ProfileScreenVM = viewModel(),
     authViewModel: AuthVM
 ) {
-    val profileList = viewModel.profileList.value
-    val firstProfile = profileList.firstOrNull()
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(start = 22.dp, end = 22.dp)
-    ) {
-        Button(
-            onClick = { navController.navigate(GraphRoute.PROFILE) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 20.dp),
-            elevation = ButtonDefaults.elevatedButtonElevation(0.dp),
-            shape = RoundedCornerShape(30.dp),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AsyncImage(
-                    model = firstProfile?.url, "Avatar",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .padding(top = 10.dp, bottom = 10.dp, start = 15.dp)
-                        .size(65.dp)
-                        .clip(CircleShape)
+    val currentUser by authViewModel.currentUser.collectAsState() // Подписываемся на StateFlow
+    val scrollState = rememberScrollState()
+    val context = LocalContext.current // Для Toast или других действий
+
+    // Структура экрана с использованием стандартных компонентов
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.profile_title)) }, // Добавим заголовок
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface, // Цвет фона TopAppBar
+                    titleContentColor = MaterialTheme.colorScheme.onSurface // Цвет текста
                 )
-
-                firstProfile?.nickname?.let {
-                    AutoresizedText(
-                        it,
-                        modifier = Modifier.padding(start = 50.dp),
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                }
-            }
-        }
-
-        IconButton(
-            onClick = { },//navController.navigate(NavigationItems.CameraInProfile.route) },
-            modifier = Modifier
-                .padding(end = 15.dp)
-                .size(35.dp)
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.add_photo),
-                "Add_photo",
             )
         }
-
-
-
+    ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 44.dp)
-                .clip(RoundedCornerShape(15))
+                .fillMaxSize()
+                .padding(paddingValues) // Применяем отступы от Scaffold
+                .verticalScroll(scrollState) // Делаем содержимое скроллящимся
+                .padding(bottom = 32.dp) // Отступ снизу для кнопки Выход
         ) {
-            val menuItems = listOf(
-                MenuItem(R.drawable.theme, "Theme", stringResource(R.string.theme)),
-                MenuItem(
-                    R.drawable.profile_settings,
-                    "Profile Settings",
-                    stringResource(R.string.profile_settings)
-                ),
-                MenuItem(
-                    R.drawable.notification,
-                    "Notification",
-                    stringResource(R.string.notification)
-                ),
-                MenuItem(R.drawable.safety, "Security", stringResource(R.string.security)),
-                MenuItem(R.drawable.company, "Company", stringResource(R.string.company)),
-                MenuItem(R.drawable.faq, "FAQ", stringResource(R.string.faq)),
-            )
+            // --- Секция профиля ---
+            currentUser?.let { user -> // Отображаем только если пользователь загружен
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box {
+                        AsyncImage(
+                            model = null, // TODO: Добавить URL аватара пользователя, если есть
+                            contentDescription = stringResource(R.string.avatar),
+                            placeholder = painterResource(id = R.drawable.profile), // Заглушка
+                            error = painterResource(id = R.drawable.profile_settings), // Заглушка при ошибке
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(CircleShape)
+                        )
+                        // Кнопка добавления/изменения фото
+                        IconButton(
+                            onClick = { /* TODO: Implement photo selection */ },
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .offset(x = 4.dp, y = 4.dp) // Небольшое смещение
+                                .size(30.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surfaceVariant) // Фон для видимости
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.add_photo),
+                                contentDescription = stringResource(R.string.add_or_change_photo),
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            // Отображаем ФИО или email, если ФИО нет (для админа)
+                            text = if (!user.firstname.isNullOrBlank()) "${user.lastname} ${user.firstname}" else user.login,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = user.login, // Отображаем email
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    // Кнопка редактирования профиля (опционально)
+                    IconButton(onClick = { /* TODO: Navigate to profile edit screen */ }) {
+                        Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.edit_profile))
+                    }
+                }
+            } ?: run {
+                // Placeholder или индикатор загрузки, если currentUser еще null
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(112.dp)
+                    .padding(16.dp)) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+            }
 
-            menuItems.forEach { menuItem ->
-                MenuButton(
-                    iconId = menuItem.iconId,
-                    contentDescription = menuItem.contentDescription,
-                    text = menuItem.text,
-                    onThemeUpdated,
-                    navController
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+
+            // --- Секция меню настроек ---
+            SettingsMenuGroup(title = stringResource(R.string.settings_group_main)) {
+                SettingsItem(
+                    icon = painterResource(R.drawable.theme),
+                    text = stringResource(R.string.theme),
+                    onClick = onThemeUpdated
                 )
+                SettingsItem(
+                    icon = painterResource(R.drawable.profile_settings),
+                    text = stringResource(R.string.profile_settings),
+                    onClick = { navController.navigate(SettingsScreen.ProfileSettings.route) }
+                )
+                SettingsItem(
+                    icon = painterResource(R.drawable.add_car),
+                    text = stringResource(R.string.add_car),
+                    onClick = { navController.navigate(SettingsScreen.AddCar.route) }
+                )
+
+                SettingsItem(
+                    icon = painterResource(id = R.drawable.company), // Используем вашу иконку
+                    text = stringResource(R.string.company),
+                    onClick = { navController.navigate(SettingsScreen.RCompany.route) }
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f)) // Занимает оставшееся место
+
+            // --- Кнопка Выход ---
+            OutlinedButton(
+                onClick = {
+                    authViewModel.logoutUser()
+                    // Переходим на граф аутентификации и очищаем весь стек назад
+                    navController.navigate(GraphRoute.AUTHENTICATION) {
+                        popUpTo(GraphRoute.MAIN) { inclusive = true } // Очищаем стек основного графа
+                        launchSingleTop = true
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 100.dp)
+            ) {
+                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                Text(stringResource(R.string.logout))
             }
         }
     }
+}
+
+// Вспомогательный компонент для группы настроек
+@Composable
+fun SettingsMenuGroup(
+    title: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+        content()
+    }
+}
+
+
+@Composable
+fun SettingsItem(
+    icon: ImageVector,
+    text: String,
+    onClick: () -> Unit,
+    trailingContent: (@Composable () -> Unit)? = { Icon(Icons.Filled.KeyboardArrowRight, contentDescription = null) } // Стрелка по умолчанию
+) {
+    ListItem(
+        headlineContent = { Text(text) },
+        leadingContent = { Icon(icon, contentDescription = text) },
+        trailingContent = trailingContent,
+        modifier = Modifier.clickable(onClick = onClick),
+        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface) // Цвет фона элемента списка
+    )
+    // Divider(modifier = Modifier.padding(start = 56.dp)) // Разделитель внутри группы (опционально)
 }
 
 @Composable
-fun MenuButton(
-    iconId: Int,
-    contentDescription: String,
+fun SettingsItem(
+    icon: androidx.compose.ui.graphics.painter.Painter,
     text: String,
-    onThemeUpdated: () -> Unit,
-    navController: NavController
+    onClick: () -> Unit,
+    trailingContent: (@Composable () -> Unit)? = { Icon(Icons.Filled.KeyboardArrowRight, contentDescription = null) }
 ) {
-    Button(
-        onClick = {
-            when (contentDescription) {
-                "Theme" -> {
-                    onThemeUpdated()
-                }
-
-                "Profile Settings" -> {
-                    //navController.navigate(.ProfileSettings.route)
-                }
-
-                "Notification" -> {
-                  //  navController.navigate(SettingsScreen.Notification.route)
-                }
-
-                "Security" -> {
-                    //navController.navigate(SettingsScreen.Security.route)
-                }
-
-                "Language" -> {
-                   // navController.navigate(SettingsScreen.Language.route)
-                }
-
-                "FAQ" -> {
-                   // navController.navigate(SettingsScreen.FAQ.route)
-                }
-            }
-        },
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(0)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 10.dp),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                painter = painterResource(iconId),
-                contentDescription = contentDescription,
-                modifier = Modifier
-                    .padding(start = 25.dp)
-                    .size(35.dp)
-            )
-            AutoresizedText(
-                text = text,
-                modifier = Modifier.padding(start = 20.dp),
-                style = MaterialTheme.typography.headlineMedium
-            )
-        }
-    }
+    ListItem(
+        headlineContent = { Text(text) },
+        leadingContent = { Icon(icon, contentDescription = text, modifier = Modifier.size(24.dp)) }, // Устанавливаем размер для Painter
+        trailingContent = trailingContent,
+        modifier = Modifier.clickable(onClick = onClick),
+        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface)
+    )
 }
-
-data class MenuItem(val iconId: Int, val contentDescription: String, val text: String)
-data class ProfileSettingsItem(val contentDescription: String, val text: String)
-data class NotificationSettingsItem(val contentDescription: String, val text: String)
-data class SecuritySettingsItem(val contentDescription: String, val text: String)
-data class LanguageSettingsItem(val contentDescription: String, val text: String)
-data class FAQSettingsItem(val contentDescription: String, val text: String)

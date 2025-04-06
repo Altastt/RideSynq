@@ -31,6 +31,7 @@ data class User(
     val phone: String?, // Сделали nullable
     val transport_name: String?,
     val transport_number: String?,
+    val transport_color: String?,
 
     @ColumnInfo(name = "login")
     val login: String,

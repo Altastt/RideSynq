@@ -27,4 +27,8 @@ class UserRepository(
 
     suspend fun validateCredentials(login: String, password: String) =
         userDao.getUserByCredentials(login, password)
+
+    suspend fun updateUser(user: User) {
+        userDao.update(user)
+    }
 }

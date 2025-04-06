@@ -3,13 +3,16 @@ package com.example.ridesynq.viewmodel
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-// import androidx.lifecycle.LiveData // Убрали
-// import androidx.lifecycle.MutableLiveData // Убрали
 import androidx.lifecycle.ViewModel
 import com.example.ridesynq.BuildConfig
 import com.example.ridesynq.data.entities.User
 import com.example.ridesynq.data.repositories.UserRepository
+import kotlinx.coroutines.Dispatchers
 import java.time.LocalTime
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
 
 class AuthVM(private val userRepository: UserRepository) : ViewModel() {
     init {
@@ -25,6 +28,8 @@ class AuthVM(private val userRepository: UserRepository) : ViewModel() {
     // Эти состояния могут быть полезны для других целей, оставим их, если они нужны где-то еще
     private val _departureTime = mutableStateOf<LocalTime?>(null)
     val departureTime: State<LocalTime?> = _departureTime
+    private val _currentUser = MutableStateFlow<User?>(null) // Используем StateFlow
+    val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
     fun setDepartureTime(time: LocalTime) {
         _departureTime.value = time
@@ -62,7 +67,8 @@ class AuthVM(private val userRepository: UserRepository) : ViewModel() {
                     post_id = if (isAdmin) 0 else 1, // Используем 0 для админа, 1 для обычного (или другой ID)
                     phone = null, // Не запрашиваем при регистрации
                     transport_name = null,
-                    transport_number = null
+                    transport_number = null,
+                    transport_color = null,
                 )
                 userRepository.createUser(user)
                 RegistrationResult.Success
@@ -81,15 +87,47 @@ class AuthVM(private val userRepository: UserRepository) : ViewModel() {
             return Result.failure(Exception("Email и пароль не могут быть пустыми"))
         }
         return try {
-            // TODO: При реальном использовании пароль должен сравниваться с хэшем в БД
-            val user = userRepository.validateCredentials(login, password)
+            val user = userRepository.validateCredentials(login, password) // TODO: Сравнение хэша
             user?.let {
-                // Пользователь найден
+                _currentUser.value = it // <<<<<<< Устанавливаем текущего пользователя
                 Result.success(it)
-            } ?: Result.failure(Exception("Неверный email или пароль")) // Более общее сообщение об ошибке
+            } ?: run {
+                _currentUser.value = null // Сбрасываем, если вход не удался
+                Result.failure(Exception("Неверный email или пароль"))
+            }
         } catch (e: Exception) {
             Log.e("AuthVM", "Login failed", e)
+            _currentUser.value = null // Сбрасываем при ошибке
             Result.failure(Exception("Ошибка входа: ${e.message}", e))
+        }
+    }
+    fun logoutUser() {
+        _currentUser.value = null
+        // Здесь можно добавить очистку токенов, сессий и т.д., если они используются
+    }
+
+    suspend fun updateUserCarDetails(
+        makeModel: String?, // Объединяем Марку и Модель
+        number: String?,
+        color: String?
+    ): Boolean { // Возвращаем true при успехе, false при ошибке
+        val currentUserValue = _currentUser.value ?: return false // Нужен текущий пользователь
+        return try {
+            val updatedUser = currentUserValue.copy(
+                transport_name = makeModel?.trim()?.takeIf { it.isNotEmpty() },
+                transport_number = number?.trim()?.takeIf { it.isNotEmpty() },
+                transport_color = color?.trim()?.takeIf { it.isNotEmpty() }
+            )
+            // Выполняем обновление в IO диспатчере
+            withContext(Dispatchers.IO) {
+                userRepository.updateUser(updatedUser)
+            }
+            // Обновляем StateFlow в основном потоке
+            _currentUser.value = updatedUser
+            true
+        } catch (e: Exception) {
+            Log.e("AuthVM", "Failed to update car details", e)
+            false
         }
     }
 }

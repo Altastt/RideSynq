@@ -19,6 +19,7 @@ playServicesLocation = "21.3.0"
 retrofit = "2.9.0"
 roomRuntime = "2.6.1"
 adapters = "3.2.0-alpha11"
+uiViewbinding = "1.7.8"
 
 
 [libraries]
@@ -50,6 +51,7 @@ picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 androidx-adapters = { group = "androidx.databinding", name = "adapters", version.ref = "adapters" }
+androidx-ui-viewbinding = { group = "androidx.compose.ui", name = "ui-viewbinding", version.ref = "uiViewbinding" }
 
 
 [plugins]

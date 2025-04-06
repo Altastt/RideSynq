@@ -24,7 +24,7 @@ import com.example.ridesynq.data.entities.UserTrip // Убедитесь, что
         Trip::class, // Если Trip не используется, уберите
         // UserTrip::class // Если UserTrip не используется, уберите
     ],
-    version = 2,
+    version = 3,
     exportSchema = false // Можно установить true и изучить генерируемую схему
 )
 @TypeConverters(RoomConverters::class) // Убедитесь, что RoomConverters существуют и нужны

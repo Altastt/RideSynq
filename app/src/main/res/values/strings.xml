@@ -3,10 +3,8 @@
 
     <string name="theme">Цветовая тема</string>
     <string name="profile_settings">Настройки профиля</string>
-    <string name="notification">Уведомления</string>
-    <string name="security">Безопасность</string>
+    <string name="add_car">Добавление авто</string>
     <string name="company">Компания</string>
-    <string name="faq" translatable="false">FAQ</string>
     <string name="exit_profile">Выход из профиля</string>
 
     <string name="permission_canceled">Разрешение отклонено</string>
@@ -82,5 +80,30 @@
     <string name="notset_recom">Рекомендации</string>
     <string name="notset_mention">Упоминания</string>
 
+
+    <string name="profile_placeholder">Загрузка профиля...</string>
+    <string name="to_work">На работу</string>
+    <string name="from_work">С работы</string>
+    <string name="request_ride">Запросить поездку</string>
+    <string name="info_point_start">Укажите точку старта на карте</string>
+    <string name="info_point_end">Укажите точку назначения на карте</string>
+
+
+    <string name="profile_title">Профиль</string>
+    <string name="avatar">Аватар</string>
+    <string name="add_or_change_photo">Добавить или изменить фото</string>
+    <string name="edit_profile">Редактировать профиль</string>
+    <string name="settings_group_main">Основные</string>
+    <string name="settings_group_support">Поддержка</string>
+    <string name="logout">Выйти</string>
+
+
+    <string name="back">Назад</string>
+    <string name="change_email">Изменить Email</string>
+    <string name="change_password">Изменить пароль</string>
+
+    <string name="company_info_title">Информация о компании</string>
+    <string name="show_location">Местоположение</string>
+    <string name="company_not_found">Информация о компании не найдена.</string>
 
 </resources>
