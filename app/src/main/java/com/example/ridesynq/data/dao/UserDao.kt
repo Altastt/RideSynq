@@ -21,11 +21,9 @@ interface UserDao {
     @Update
     suspend fun update(user: User)
 
-    // Проверка существования пользователя
     @Query("SELECT EXISTS(SELECT 1 FROM users WHERE login = :login)")
     suspend fun isLoginExists(login: String): Boolean
 
-    // Получение пользователя по логину и паролю
     @Query("SELECT * FROM users WHERE login = :login AND password = :password")
     suspend fun getUserByCredentials(login: String, password: String): User?
 }

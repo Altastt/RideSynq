@@ -32,4 +32,6 @@ object GraphRoute {
     const val MAIN = "main_graph"
     const val PROFILE = "profile_graph"
     const val RIDE = "ride_graph"
+
+    const val ADMIN_MAIN = "admin_main_graph"
 }

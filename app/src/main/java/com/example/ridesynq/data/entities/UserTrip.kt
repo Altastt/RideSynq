@@ -25,7 +25,7 @@ import androidx.room.Index
     ],
     indices = [
         Index("user_id"),
-        Index("trip_id") // Добавляем индекс
+        Index("trip_id")
     ]
 )
 data class UserTrip(

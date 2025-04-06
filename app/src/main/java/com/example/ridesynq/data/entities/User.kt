@@ -3,7 +3,6 @@ package com.example.ridesynq.data.entities
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.ForeignKey.Companion.CASCADE
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
@@ -14,27 +13,22 @@ import androidx.room.PrimaryKey
             entity = Company::class,
             parentColumns = ["id"],
             childColumns = ["company_id"],
-            onDelete = CASCADE
+            onDelete = ForeignKey.CASCADE // или SET_NULL, если пользователь может остаться без компании
         ),
-        ForeignKey(
-            entity = Post::class,
-            parentColumns = ["id"],
-            childColumns = ["post_id"],
-            onDelete = CASCADE
-        )
+
     ],
-    indices = [Index("company_id"), Index("post_id")]
+    indices = [Index("company_id"), Index("post_id"), Index("login")] // Добавили индекс для login
 )
 data class User(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 
     val company_id: Int,
-    val post_id: Int,
-    val firstname: String,
-    val lastname: String,
-    val surname: String?,
-    val phone: String,
+    val post_id: Int, // 0 = Admin, >0 = Regular User Post ID
+    val firstname: String?, // Сделали nullable
+    val lastname: String?, // Сделали nullable
+    val surname: String?, // Уже nullable
+    val phone: String?, // Сделали nullable
     val transport_name: String?,
     val transport_number: String?,
 
@@ -42,5 +36,5 @@ data class User(
     val login: String,
 
     @ColumnInfo(name = "password")
-    val password: String
+    val password: String // ПОМНИТЕ О ХЭШИРОВАНИИ!
 )

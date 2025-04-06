@@ -333,7 +333,6 @@ fun SearchScreen(
                     showTimePicker = false
                     authViewModel.setDepartureTime(time)
 
-                    // Добавить вызов построения маршрута
                     if (permissionState.status.isGranted) {
                         locationManager?.requestSingleUpdate(object : LocationListener {
                             override fun onLocationUpdated(location: com.yandex.mapkit.location.Location) {

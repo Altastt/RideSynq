@@ -30,6 +30,11 @@
     <string name="sign_in_tb_to_signup">Создать</string>
 
 
+    <string name="select_company">Выберите компанию</string>
+    <string name="no_companies_available">Нет доступных компаний</string>
+    <string name="user_not_found">Пользователь не найден</string>
+    <string name="login_error_occurred">Произошла ошибка входа</string>
+
     <string name="sign_up_lastname">Фамилия</string>
     <string name="sign_up_firstname">Имя</string>
     <string name="sign_up_surname">Отчество</string>
@@ -42,6 +47,8 @@
     <string name="sign_up_company_inn">ИНН</string>
     <string name="sign_up_company_kpp">КПП</string>
     <string name="sign_up_company_ogrn">ОГРН</string>
+    <string name="sign_up_company_latitude">Широта: 55.751574</string>
+    <string name="sign_up_company_longitude">Долгота: 37.617734</string>
 
 
     <string name="forgot_title">Восстановление пароля</string>

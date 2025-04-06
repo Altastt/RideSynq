@@ -7,8 +7,9 @@ import kotlinx.coroutines.flow.Flow
 class CompanyRepository(private val companyDao: CompanyDao) {
     val allCompanies: Flow<List<Company>> = companyDao.getAllCompanies()
 
-    suspend fun insert(company: Company) {
-        companyDao.insert(company)
+    // Метод теперь возвращает Long (ID вставленной компании)
+    suspend fun insert(company: Company): Long {
+        return companyDao.insert(company) // Возвращаем результат insert из DAO
     }
 
     suspend fun getCompanyById(id: Int): Company? {
