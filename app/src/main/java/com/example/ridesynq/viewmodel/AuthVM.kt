@@ -106,23 +106,15 @@ class AuthVM(private val userRepository: UserRepository) : ViewModel() {
         // Здесь можно добавить очистку токенов, сессий и т.д., если они используются
     }
 
-    suspend fun updateUserCarDetails(
-        makeModel: String?, // Объединяем Марку и Модель
-        number: String?,
-        color: String?
-    ): Boolean { // Возвращаем true при успехе, false при ошибке
-        val currentUserValue = _currentUser.value ?: return false // Нужен текущий пользователь
+    suspend fun updateUserCarDetails(makeModel: String?, number: String?, color: String?): Boolean {
+        val currentUserValue = _currentUser.value ?: return false
         return try {
             val updatedUser = currentUserValue.copy(
                 transport_name = makeModel?.trim()?.takeIf { it.isNotEmpty() },
                 transport_number = number?.trim()?.takeIf { it.isNotEmpty() },
                 transport_color = color?.trim()?.takeIf { it.isNotEmpty() }
             )
-            // Выполняем обновление в IO диспатчере
-            withContext(Dispatchers.IO) {
-                userRepository.updateUser(updatedUser)
-            }
-            // Обновляем StateFlow в основном потоке
+            withContext(Dispatchers.IO) { userRepository.updateUser(updatedUser) }
             _currentUser.value = updatedUser
             true
         } catch (e: Exception) {
@@ -130,4 +122,122 @@ class AuthVM(private val userRepository: UserRepository) : ViewModel() {
             false
         }
     }
+
+    suspend fun changeEmail(newEmail: String, currentPassword: String): Result<Unit> {
+        val currentUserValue = _currentUser.value ?: return Result.failure(Exception("Пользователь не авторизован"))
+        if (newEmail.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) {
+            return Result.failure(Exception("Некорректный новый email"))
+        }
+        if (currentPassword.isBlank()) {
+            return Result.failure(Exception("Введите текущий пароль"))
+        }
+
+        return try {
+            // 1. Verify current password
+            val userFromDb = withContext(Dispatchers.IO) {
+                userRepository.validateCredentials(currentUserValue.login, currentPassword) // Use validateCredentials
+            }
+            // Explicit null check before accessing id
+            if (userFromDb == null) {
+                return Result.failure(Exception("Неверный текущий пароль"))
+            }
+            // Now we know userFromDb is not null, accessing id is safe
+            if (userFromDb.id != currentUserValue.id) {
+                // This case might be redundant if validateCredentials works correctly, but belt-and-suspenders
+                return Result.failure(Exception("Ошибка проверки пользователя"))
+            }
+
+
+            // 2. Check if new email is unique (excluding current user)
+            val isTaken = withContext(Dispatchers.IO) {
+                userRepository.doesLoginExist(newEmail) // <<< USE CORRECT REPO METHOD
+            }
+            if (isTaken && newEmail != currentUserValue.login) {
+                return Result.failure(Exception("Этот email уже используется"))
+            }
+
+            // 3. Update user
+            val updatedUser = currentUserValue.copy(login = newEmail)
+            withContext(Dispatchers.IO) {
+                userRepository.updateUser(updatedUser)
+            }
+            _currentUser.value = updatedUser
+            Result.success(Unit)
+
+        } catch (e: Exception) {
+            Log.e("AuthVM", "Change Email failed", e)
+            Result.failure(Exception("Ошибка смены email: ${e.message}", e))
+        }
+    }
+
+
+    suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> {
+        val currentUserValue = _currentUser.value ?: return Result.failure(Exception("Пользователь не авторизован"))
+
+        if (currentPassword.isBlank() || newPassword.isBlank()) {
+            return Result.failure(Exception("Пароли не могут быть пустыми"))
+        }
+
+        return try {
+            // 1. Verify current password
+            val userFromDb = withContext(Dispatchers.IO) {
+                userRepository.validateCredentials(currentUserValue.login, currentPassword) // Use validateCredentials
+            }
+            // Explicit null check
+            if (userFromDb == null) {
+                return Result.failure(Exception("Неверный текущий пароль"))
+            }
+            // Check ID just in case
+            if (userFromDb.id != currentUserValue.id) {
+                return Result.failure(Exception("Ошибка проверки пользователя"))
+            }
+
+            // 2. Update user with new password
+            val updatedUser = currentUserValue.copy(password = newPassword) // HASH newPassword!
+            withContext(Dispatchers.IO) {
+                userRepository.updateUser(updatedUser)
+            }
+            Result.success(Unit)
+
+        } catch (e: Exception) {
+            Log.e("AuthVM", "Change Password failed", e)
+            Result.failure(Exception("Ошибка смены пароля: ${e.message}", e))
+        }
+    }
+
+    suspend fun updateUserProfile(updatedUser: User): Result<Unit> {
+        val currentUserValue = _currentUser.value ?: return Result.failure(Exception("Пользователь не авторизован"))
+        if (updatedUser.id != currentUserValue.id) {
+            return Result.failure(Exception("Несоответствие ID пользователя"))
+        }
+        val finalUserToSave = updatedUser.copy(
+            password = currentUserValue.password,
+            login = currentUserValue.login
+        )
+        return try {
+            withContext(Dispatchers.IO) { userRepository.updateUser(finalUserToSave) }
+            _currentUser.value = finalUserToSave
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e("AuthVM", "Update Profile failed", e)
+            Result.failure(Exception("Ошибка обновления профиля: ${e.message}", e))
+        }
+    }
+
+    suspend fun updateUserAvatarPath(avatarPath: String?): Result<Unit> {
+        val currentUserValue = _currentUser.value ?: return Result.failure(Exception("Пользователь не авторизован"))
+        return try {
+            val updatedUser = currentUserValue.copy(avatarUrl = avatarPath)
+            withContext(Dispatchers.IO) {
+                userRepository.updateUser(updatedUser)
+            }
+            _currentUser.value = updatedUser
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e("AuthVM", "Update Avatar Path failed", e)
+            Result.failure(Exception("Ошибка обновления аватара: ${e.message}", e))
+        }
+    }
+
+
 }

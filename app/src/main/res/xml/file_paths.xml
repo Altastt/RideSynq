@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Points to files in the root of your app's internal cache directory -->
+    <cache-path name="my_cache_images" path="." />
+    <!-- Points to files in the root of your app's external cache directory -->
+    <external-cache-path name="my_external_cache_images" path="." />
+    <!-- Add other paths like files-path or external-files-path if needed -->
+</paths>

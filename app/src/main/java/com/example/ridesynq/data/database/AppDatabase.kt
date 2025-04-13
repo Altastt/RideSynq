@@ -19,19 +19,18 @@ import com.example.ridesynq.data.entities.UserTrip // Убедитесь, что
 @Database(
     entities = [
         Company::class,
-        // Post::class, // Если Post не используется, уберите
         User::class,
-        Trip::class, // Если Trip не используется, уберите
-        // UserTrip::class // Если UserTrip не используется, уберите
+        Trip::class,
+        UserTrip::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false // Можно установить true и изучить генерируемую схему
 )
 @TypeConverters(RoomConverters::class) // Убедитесь, что RoomConverters существуют и нужны
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun companyDao(): CompanyDao
-    // abstract fun tripDao(): TripDao // Если TripDao не используется, уберите
+    abstract fun tripDao(): TripDao
 
     companion object {
         @Volatile

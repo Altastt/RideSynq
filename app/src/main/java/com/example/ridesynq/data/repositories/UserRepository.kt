@@ -25,10 +25,18 @@ class UserRepository(
     suspend fun isLoginUnique(login: String) =
         !userDao.isLoginExists(login)
 
+    suspend fun doesLoginExist(login: String): Boolean {
+        return userDao.isLoginExists(login)
+    }
+
     suspend fun validateCredentials(login: String, password: String) =
         userDao.getUserByCredentials(login, password)
 
     suspend fun updateUser(user: User) {
         userDao.update(user)
+    }
+
+    suspend fun getUserById(userId: Int): User? {
+        return userDao.getUserById(userId)
     }
 }

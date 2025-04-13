@@ -13,22 +13,23 @@ import androidx.room.PrimaryKey
             entity = Company::class,
             parentColumns = ["id"],
             childColumns = ["company_id"],
-            onDelete = ForeignKey.CASCADE // или SET_NULL, если пользователь может остаться без компании
+            onDelete = ForeignKey.CASCADE
         ),
-
+        // ForeignKey for post_id if Post table exists and is used for roles
+        // ForeignKey(entity = Post::class, ...)
     ],
-    indices = [Index("company_id"), Index("post_id"), Index("login")] // Добавили индекс для login
+    indices = [Index("company_id"), /*Index("post_id"),*/ Index("login", unique = true)] // Made login unique
 )
 data class User(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 
     val company_id: Int,
-    val post_id: Int, // 0 = Admin, >0 = Regular User Post ID
-    val firstname: String?, // Сделали nullable
-    val lastname: String?, // Сделали nullable
-    val surname: String?, // Уже nullable
-    val phone: String?, // Сделали nullable
+    val post_id: Int, // 0 = Admin, >0 = Regular User Post ID (Consider a dedicated Role table/enum)
+    val firstname: String?,
+    val lastname: String?,
+    val surname: String?,
+    val phone: String?,
     val transport_name: String?,
     val transport_number: String?,
     val transport_color: String?,
@@ -37,5 +38,23 @@ data class User(
     val login: String,
 
     @ColumnInfo(name = "password")
-    val password: String // ПОМНИТЕ О ХЭШИРОВАНИИ!
+    val password: String,
+
+    @ColumnInfo(name = "avatar_url")
+    val avatarUrl: String? = null,
+
+    @ColumnInfo(name = "home_address_street")
+    val homeAddressStreet: String? = null,
+
+    @ColumnInfo(name = "home_address_city")
+    val homeAddressCity: String? = null,
+
+    @ColumnInfo(name = "home_address_postal_code")
+    val homeAddressPostalCode: String? = null,
+
+    @ColumnInfo(name = "home_address_latitude")
+    val homeAddressLatitude: Double? = null,
+
+    @ColumnInfo(name = "home_address_longitude")
+    val homeAddressLongitude: Double? = null
 )

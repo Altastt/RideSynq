@@ -99,8 +99,17 @@
 
 
     <string name="back">Назад</string>
+    <string name="save">Сохранить</string>
     <string name="change_email">Изменить Email</string>
+    <string name="new_email_label">Новый Email</string>
     <string name="change_password">Изменить пароль</string>
+    <string name="current_password_placeholder">Текущий пароль</string>
+    <string name="new_password_placeholder">Новый пароль</string>
+    <string name="confirm_new_password_placeholder">Повторить новый пароль</string>
+    <string name="phone_number_label">Номер телефона</string>
+    <string name="city_label">Город</string>
+    <string name="street_address_label">Улица</string>
+    <string name="postal_code_label">Почтовый индекс</string>
 
     <string name="company_info_title">Информация о компании</string>
     <string name="show_location">Местоположение</string>

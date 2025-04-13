@@ -11,7 +11,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.example.ridesynq.models.NavigationItems
 import com.example.ridesynq.view.AddCarScreen
+import com.example.ridesynq.view.ChangeEmailScreen
+import com.example.ridesynq.view.ChangePasswordScreen
 import com.example.ridesynq.view.CompanyScreen
+import com.example.ridesynq.view.EditProfileScreen
 import com.example.ridesynq.view.ProfileScreen
 import com.example.ridesynq.view.ProfileSettingsScreen
 import com.example.ridesynq.view.SearchScreen
@@ -87,10 +90,10 @@ fun NavGraphBuilder.settingsNavigation(
 ) {
     navigation(
         route = settingsGraphRoute,
-        startDestination = SettingsScreen.ProfileSettings.route
+        startDestination = SettingsScreen.ProfileSettings.route // Keep ProfileSettings as entry
     ) {
         composable(SettingsScreen.ProfileSettings.route) {
-            ProfileSettingsScreen(navController)
+            ProfileSettingsScreen(navController) // Navigates to ChangeEmail/Password
         }
         composable(SettingsScreen.AddCar.route) {
             AddCarScreen(navController, authViewModel)
@@ -98,10 +101,24 @@ fun NavGraphBuilder.settingsNavigation(
         composable(SettingsScreen.RCompany.route) {
             CompanyScreen(navController, authViewModel, companyViewModel)
         }
+        // --- New Screen Composables ---
+        composable(SettingsScreen.EditProfile.route) {
+            EditProfileScreen(navController, authViewModel)
+        }
+        composable(SettingsScreen.ChangeEmail.route) {
+            ChangeEmailScreen(navController, authViewModel)
+        }
+        composable(SettingsScreen.ChangePassword.route) {
+            ChangePasswordScreen(navController, authViewModel)
+        }
     }
 }
+
 sealed class SettingsScreen(val route: String) {
     object AddCar : SettingsScreen("ADDCAR")
     object RCompany : SettingsScreen("COMPANY")
     object ProfileSettings : SettingsScreen("PROFILESETTINGS")
+    object EditProfile : SettingsScreen("EDIT_PROFILE")
+    object ChangeEmail : SettingsScreen("CHANGE_EMAIL")
+    object ChangePassword : SettingsScreen("CHANGE_PASSWORD")
 }
