@@ -49,20 +49,29 @@ enum class TripDirection { TO_WORK, FROM_WORK }
 @Composable
 fun SearchScreen(
     authViewModel: AuthVM,
-    companyViewModel: CompanyViewModel // Нужен для координат компании
+    companyViewModel: CompanyViewModel,
+    initialLatitude: Double? = null,
+    initialLongitude: Double? = null
     // tripViewModel: TripViewModel = viewModel() // Для создания поездки
 ) {
     val context = LocalContext.current
     val currentUser by authViewModel.currentUser.collectAsState()
-    val userCompany = remember(currentUser) {
-        currentUser?.let { Company(
-            id = it.company_id,
-            name = "Test Company",
-            latitude = 55.751244,
-            longitude = 37.618423,
-            inn = "",
-            kpp = "",
-            ogrn = "") }
+    val userCompany by remember(currentUser) {
+        derivedStateOf {
+            currentUser?.let { user ->
+                // TODO: Ideally, fetch the full Company object based on user.company_id
+                Company(
+                    id = user.company_id,
+                    name = "Fetched Company Name",
+                    latitude = 55.751244,
+                    longitude = 37.618423,
+                    inn = "", kpp = "", ogrn = ""
+                )
+                // If you need the full company object:
+                // companyViewModel.loadCompanyById(user.company_id)
+                // companyViewModel.selectedCompany.value // But this is state, tricky here
+            }
+        }
     }
     var tripDirection by remember { mutableStateOf(TripDirection.TO_WORK) }
     var startPoint by remember { mutableStateOf<Point?>(null) }
@@ -127,16 +136,30 @@ fun SearchScreen(
 
     // --- Установка начальной позиции камеры ---
     LaunchedEffect(mapView, userCompany, locationPermissionsState.allPermissionsGranted) {
-        if (!initialCameraPositionSet && userCompany != null) {
-            mapView.map.move(
-                CameraPosition(Point(userCompany.latitude, userCompany.longitude), 14.0f, 0.0f, 0.0f),
-                Animation(Animation.Type.SMOOTH, 0.5f),
-                null
-            )
-            initialCameraPositionSet = true
-        } else if (!initialCameraPositionSet && locationPermissionsState.allPermissionsGranted) {
-            // Попытка центрироваться на пользователе, если нет данных о компании
-            // Нужна обработка UserLocationObjectListener для получения первой позиции
+        if (!initialCameraPositionSet) {
+            val targetPoint: Point?
+
+            if (initialLatitude != null && initialLongitude != null) {
+                targetPoint = Point(initialLatitude, initialLongitude)
+                mapView.map.move(
+                    CameraPosition(targetPoint, 15.0f, 0.0f, 0.0f),
+                    Animation(Animation.Type.SMOOTH, 0.8f),
+                    null
+                )
+                mapObjectCollection?.addPlacemark(
+                    targetPoint,
+                    ImageProvider.fromResource(context, R.drawable.placemark_company) // Use a distinct icon
+                )
+                initialCameraPositionSet = true
+        } else if (userCompany != null) {
+                targetPoint = Point(userCompany!!.latitude, userCompany!!.longitude)
+                mapView.map.move(
+                    CameraPosition(targetPoint, 14.0f, 0.0f, 0.0f),
+                    Animation(Animation.Type.SMOOTH, 0.5f),
+                    null
+                )
+                initialCameraPositionSet = true
+            }
         }
     }
 
@@ -146,10 +169,10 @@ fun SearchScreen(
             when (tripDirection) {
                 TripDirection.TO_WORK -> {
                     startPoint = null // Сбрасываем старт, пользователь выберет
-                    endPoint = Point(userCompany.latitude, userCompany.longitude)
+                    endPoint = Point(userCompany!!.latitude, userCompany!!.longitude)
                 }
                 TripDirection.FROM_WORK -> {
-                    startPoint = Point(userCompany.latitude, userCompany.longitude)
+                    startPoint = Point(userCompany!!.latitude, userCompany!!.longitude)
                     endPoint = null // Сбрасываем конец, пользователь выберет
                 }
             }
@@ -237,7 +260,7 @@ fun SearchScreen(
             // Нижняя кнопка (Запросить поездку)
             Button(
                 onClick = {
-                    // TODO: Логика создания поездки
+
                     if (startPoint != null && endPoint != null && currentUser != null) {
                         // tripViewModel.createTripRequest(...)
                         println("Requesting trip: Start=$startPoint, End=$endPoint, Time=${selectedDateTime.timeInMillis}, User=${currentUser!!.id}, Direction=$tripDirection")
@@ -324,7 +347,7 @@ fun rememberMapViewWithLifecycle(): MapView {
 
 // Обновление меток на карте
 fun updatePlacemarks(collection: MapObjectCollection?, start: Point?, end: Point?, context: Context) {
-    collection?.clear() // Очищаем старые метки
+    collection?.clear() 
     val startIcon = ImageProvider.fromResource(context, R.drawable.placemark_start) // Нужны иконки
     val endIcon = ImageProvider.fromResource(context, R.drawable.placemark_end) // Нужны иконки
 

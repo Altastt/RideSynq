@@ -16,6 +16,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.ridesynq.models.NavigationItems
 
@@ -47,20 +49,20 @@ private fun BottomNavigationBar(navController: NavController) {
             .height(60.dp)
     ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
-        items.forEach { items ->
+        val currentDestination = navBackStackEntry?.destination
+        items.forEach { screen ->
             NavigationBarItem(
                 icon = {
                     Icon(
-                        painter = painterResource(items.icon),
-                        contentDescription = items.title,
+                        painter = painterResource(screen.icon),
+                        contentDescription = screen.title,
                         modifier = Modifier.size(28.dp)
                     )
                 },
-                selected = currentRoute == items.route,
+                selected = currentDestination?.hierarchy?.any { it.route == screen.baseRoute } == true,
                 onClick = {
-                    navController.navigate(items.route) {
-                        popUpTo(navController.graph.startDestinationRoute!!) { inclusive = false }
+                    navController.navigate(screen.baseRoute) {
+                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                         launchSingleTop = true
                         restoreState = true
                     }

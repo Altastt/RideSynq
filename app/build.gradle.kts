@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 val properties = Properties().apply {
     val localProperties = project.rootProject.file("local.properties")
@@ -94,4 +95,7 @@ dependencies {
     implementation (libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
+
+    implementation(libs.kotlinx.serialization.json)
+
 }

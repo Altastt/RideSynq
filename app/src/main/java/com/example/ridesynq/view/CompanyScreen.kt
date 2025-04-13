@@ -1,5 +1,6 @@
 package com.example.ridesynq.view
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -11,8 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.navigation.NavController
 import com.example.ridesynq.R
+import com.example.ridesynq.data.entities.Company
+import com.example.ridesynq.models.NavigationItems
 import com.example.ridesynq.viewmodel.AuthVM
 import com.example.ridesynq.viewmodel.CompanyViewModel
 
@@ -20,13 +24,13 @@ import com.example.ridesynq.viewmodel.CompanyViewModel
 @Composable
 fun CompanyScreen(
     navController: NavController,
-    authViewModel: AuthVM,        // Нужен для ID компании пользователя
-    companyViewModel: CompanyViewModel // Нужен для загрузки компании
+    authViewModel: AuthVM,
+    companyViewModel: CompanyViewModel
 ) {
     val currentUser by authViewModel.currentUser.collectAsState()
     val selectedCompany by companyViewModel.selectedCompany.collectAsState()
 
-    // Загружаем компанию, когда известен ID компании пользователя
+
     LaunchedEffect(currentUser) {
         currentUser?.company_id?.let { companyId ->
             companyViewModel.loadCompanyById(companyId)
@@ -55,13 +59,26 @@ fun CompanyScreen(
                 .padding(16.dp)
         ) {
             when {
-                // Показываем данные, если компания загружена
                 selectedCompany != null -> {
                     CompanyInfoCard(company = selectedCompany!!) { company ->
-                        // TODO: Навигация на карту с меткой компании
-                        // Нужен отдельный экран карты или передача координат
-                        // Пример: navController.navigate("map_screen/${company.latitude}/${company.longitude}")
-                        println("Navigate to map for company: ${company.name} at ${company.latitude}, ${company.longitude}")
+                        val deepLinkUriString = NavigationItems.Search.createDeepLinkUriString(
+                            latitude = company.latitude,
+                            longitude = company.longitude
+                        )
+
+                        Log.d("CompanyScreen", "Navigating with Deeplink String: $deepLinkUriString")
+                        try {
+                            navController.navigate(deepLinkUriString.toUri()) {
+                                launchSingleTop = true
+                            }
+                        } catch (e: IllegalArgumentException) {
+                            Log.e("CompanyScreen", "Navigation failed: Invalid argument or deep link pattern mismatch for '$deepLinkUriString'", e)
+
+                        } catch (e: Exception) {
+
+                            Log.e("CompanyScreen", "Navigation failed for '$deepLinkUriString'", e)
+
+                        }
                     }
                 }
                 // Показываем индикатор загрузки, пока компания не загружена (и пользователь известен)
@@ -86,8 +103,8 @@ fun CompanyScreen(
 
 @Composable
 fun CompanyInfoCard(
-    company: com.example.ridesynq.data.entities.Company,
-    onLocationClick: (com.example.ridesynq.data.entities.Company) -> Unit
+    company: Company,
+    onLocationClick: (Company) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),

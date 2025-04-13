@@ -6,8 +6,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier // << Импорт Modifier
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
 import com.example.ridesynq.models.NavigationItems
 import com.example.ridesynq.view.AddCarScreen
@@ -25,7 +28,7 @@ import com.example.ridesynq.viewmodel.CompanyViewModel
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RootNavigation(
-    modifier: Modifier = Modifier, // << Добавляем параметр modifier
+    modifier: Modifier = Modifier,
     navController: NavHostController,
     onThemeUpdated: () -> Unit,
     authVM: AuthVM,
@@ -34,25 +37,53 @@ fun RootNavigation(
     NavHost(
         navController = navController,
         route = GraphRoute.ROOT,
-        startDestination = GraphRoute.AUTHENTICATION, // Стартуем с аутентификации
-        modifier = modifier // << Применяем modifier (с paddingValues от Scaffold)
+        startDestination = GraphRoute.AUTHENTICATION,
+        modifier = modifier
     ) {
-        // Граф аутентификации (без изменений)
+
         authNavigation(navController, authVM, companyVM)
 
-        // Вложенный граф для основного контента приложения
         navigation(
             route = GraphRoute.MAIN,
-            startDestination = NavigationItems.Trip.route
+            startDestination = NavigationItems.Trip.baseRoute
         ) {
-            // Экраны, соответствующие вкладкам Bottom Navigation Bar
-            composable(NavigationItems.Trip.route) {
+
+            composable(NavigationItems.Trip.baseRoute) {
                 TripScreen()
             }
-            composable(NavigationItems.Search.route) {
-                SearchScreen(authViewModel = authVM, companyViewModel = companyVM)
+            val searchArguments = listOf(
+                navArgument(NavigationItems.Search.LAT_ARG) {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = "null"
+                },
+                navArgument(NavigationItems.Search.LON_ARG) {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = "null"
+                }
+            )
+            val searchDeepLink = listOf(navDeepLink {
+                uriPattern = "app://ridesynq/${NavigationItems.Search.baseRoute}/{${NavigationItems.Search.LAT_ARG}}/{${NavigationItems.Search.LON_ARG}}"
+            })
+            composable(
+                NavigationItems.Search.route,
+                arguments = searchArguments,
+                deepLinks = searchDeepLink
+            ) { backStackEntry ->
+
+                val latitudeString = backStackEntry.arguments?.getString(NavigationItems.Search.LAT_ARG)
+                val longitudeString = backStackEntry.arguments?.getString(NavigationItems.Search.LON_ARG)
+                val initialLatitude = if (latitudeString == "null") null else latitudeString?.toDoubleOrNull()
+                val initialLongitude = if (longitudeString == "null") null else longitudeString?.toDoubleOrNull()
+                SearchScreen(
+                    authViewModel = authVM,
+                    companyViewModel = companyVM,
+                    initialLatitude = initialLatitude,
+                    initialLongitude = initialLongitude
+                )
             }
-            composable(NavigationItems.Profile.route) {
+            composable(NavigationItems.Profile.baseRoute) {
                 ProfileScreen(
                     navController = navController,
                     onThemeUpdated = onThemeUpdated,
@@ -90,10 +121,10 @@ fun NavGraphBuilder.settingsNavigation(
 ) {
     navigation(
         route = settingsGraphRoute,
-        startDestination = SettingsScreen.ProfileSettings.route // Keep ProfileSettings as entry
+        startDestination = SettingsScreen.ProfileSettings.route
     ) {
         composable(SettingsScreen.ProfileSettings.route) {
-            ProfileSettingsScreen(navController) // Navigates to ChangeEmail/Password
+            ProfileSettingsScreen(navController)
         }
         composable(SettingsScreen.AddCar.route) {
             AddCarScreen(navController, authViewModel)
@@ -101,7 +132,6 @@ fun NavGraphBuilder.settingsNavigation(
         composable(SettingsScreen.RCompany.route) {
             CompanyScreen(navController, authViewModel, companyViewModel)
         }
-        // --- New Screen Composables ---
         composable(SettingsScreen.EditProfile.route) {
             EditProfileScreen(navController, authViewModel)
         }

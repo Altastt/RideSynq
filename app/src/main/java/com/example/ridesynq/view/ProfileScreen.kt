@@ -226,7 +226,6 @@ fun ProfileScreen(
 
             // --- Settings Menu ---
             SettingsMenuGroup(title = stringResource(R.string.settings_group_main)) {
-                // ... Other SettingsItems ...
                 SettingsItem(
                     icon = painterResource(R.drawable.theme),
                     text = stringResource(R.string.theme),
