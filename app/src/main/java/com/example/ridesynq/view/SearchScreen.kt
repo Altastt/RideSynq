@@ -51,7 +51,6 @@ import com.yandex.runtime.image.ImageProvider
 import java.text.SimpleDateFormat
 import java.util.*
 
-
 enum class TripDirection { TO_WORK, FROM_WORK }
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
@@ -59,19 +58,18 @@ enum class TripDirection { TO_WORK, FROM_WORK }
 fun SearchScreen(
     authViewModel: AuthVM,
     companyViewModel: CompanyViewModel,
+    // Удалены initialLatitude и initialLongitude из параметров функции
 ) {
     val context = LocalContext.current
     val currentUser by authViewModel.currentUser.collectAsState()
 
-
     val appDatabase = AppDatabase.getDatabase(context)
     val tripViewModel: TripViewModel = viewModel(
-        factory = TripVMFactory(appDatabase.tripDao(), appDatabase.userTripDao()) // Пример фабрики
+        factory = TripVMFactory(appDatabase.tripDao(), appDatabase.userTripDao())
     )
 
-
     val allCompanies by companyViewModel.allCompanies.collectAsState(initial = emptyList())
-    val userCompanyData = remember(currentUser, allCompanies) { // Передаем allCompanies как ключ
+    val userCompanyData = remember(currentUser, allCompanies) {
         currentUser?.let { user ->
             val companyEntity = allCompanies.find { it.id == user.company_id }
             Company(
@@ -86,6 +84,7 @@ fun SearchScreen(
         }
     }
 
+    // Это состояние теперь единственный источник для targetCoords
     val targetCoordsFromVM by companyViewModel.mapTargetCoordinates.collectAsState()
 
     var tripDirection by remember { mutableStateOf(TripDirection.TO_WORK) }
@@ -95,7 +94,7 @@ fun SearchScreen(
 
     val localContext = LocalContext.current
     val localLifecycleOwner = LocalLifecycleOwner.current
-    val mapView = remember(localContext, localLifecycleOwner) { // Передаем context и lifecycleOwner как ключи
+    val mapView = remember(localContext, localLifecycleOwner) {
         MapView(localContext).apply {
             val lifecycle = localLifecycleOwner.lifecycle
             val observer = LifecycleEventObserver { _, event ->
@@ -108,24 +107,17 @@ fun SearchScreen(
                 }
             }
             lifecycle.addObserver(observer)
-            // onDispose не нужен в remember, если мы используем DisposableEffect для очистки
         }
     }
-    // Используем DisposableEffect для очистки ресурсов MapView при выходе из композиции
     DisposableEffect(mapView) {
         onDispose {
-            // Явное удаление слушателя из lifecycle здесь не нужно,
-            // т.к. он привязан к lifecycle mapView, которая будет уничтожена.
-            // Можно добавить mapView.onStop() и MapKitFactory.getInstance().onStop() здесь,
-            // если это не обрабатывается корректно в LifecycleEventObserver при быстром выходе.
-            // Однако, Yandex MapKit обычно хорошо управляет своим жизненным циклом через onStart/onStop.
+            // Очистка, если необходима (Yandex MapKit обычно сам управляет)
         }
     }
+
     var mapObjectCollection: MapObjectCollection? by remember { mutableStateOf(null) }
     var userLocationLayer: UserLocationLayer? by remember { mutableStateOf(null) }
 
-    // Точка, которая пришла из CompanyScreen (или данные компании пользователя по умолчанию)
-    // Используется для постоянного отображения метки компании и центрирования
     var companyDisplayPoint: Point? by remember { mutableStateOf(null) }
     var initialCenteringDone by remember { mutableStateOf(false) }
 
@@ -171,14 +163,15 @@ fun SearchScreen(
             if (targetCoordsFromVM != null) {
                 Log.d("SearchScreen", "Centering on targetCoordsFromVM: $targetCoordsFromVM")
                 pointToCenter = Point(targetCoordsFromVM!!.first, targetCoordsFromVM!!.second)
-                companyDisplayPoint = pointToCenter // Эта метка будет постоянной
-                companyViewModel.consumeMapTarget() // Сбрасываем после использования
+                companyDisplayPoint = pointToCenter
+                companyViewModel.consumeMapTarget()
             } else if (userCompanyData != null) {
                 Log.d("SearchScreen", "Centering on userCompanyData: ${userCompanyData!!.latitude}, ${userCompanyData!!.longitude}")
                 pointToCenter = Point(userCompanyData!!.latitude, userCompanyData!!.longitude)
                 companyDisplayPoint = pointToCenter
             } else {
                 pointToCenter = null
+                Log.d("SearchScreen", "No target or user company data for initial centering.")
             }
 
             pointToCenter?.let {
@@ -188,12 +181,12 @@ fun SearchScreen(
                     null
                 )
                 updatePlacemarks(mapObjectCollection, startPoint, endPoint, context, companyDisplayPoint)
-                initialCenteringDone = true // Центрирование выполнено
+                initialCenteringDone = true
+                Log.d("SearchScreen", "Initial centering done for point: $it")
             }
         }
     }
 
-    // Обновление точек старта/конца при смене направления
     LaunchedEffect(tripDirection, userCompanyData) {
         userCompanyData?.let { company ->
             when (tripDirection) {
@@ -210,9 +203,8 @@ fun SearchScreen(
         }
     }
 
-    // Состояния для диалога "Я водитель/пассажир"
     var showRoleDialog by remember { mutableStateOf(false) }
-    var isDriverRole by remember { mutableStateOf(true) } // По умолчанию водитель
+    var isDriverRole by remember { mutableStateOf(true) }
     var seatsInput by remember { mutableStateOf("") }
     var priceInput by remember { mutableStateOf("") }
 
@@ -221,13 +213,12 @@ fun SearchScreen(
         AndroidViewBinding(
             factory = MapViewBinding::inflate,
             modifier = Modifier.fillMaxSize(),
-            update = { /* No direct updates needed here */ }
+            update = { }
         )
 
         Column(
             modifier = Modifier.fillMaxSize().padding(8.dp),
         ) {
-            // Верхние элементы (Выбор направления, Дата/Время, Подсказка)
             Column(modifier = Modifier.fillMaxWidth()) {
                 SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
                     SegmentedButton(
@@ -273,7 +264,7 @@ fun SearchScreen(
             Button(
                 onClick = {
                     if (startPoint != null && endPoint != null && currentUser != null && userCompanyData != null) {
-                        showRoleDialog = true // Открываем диалог для выбора роли и деталей
+                        showRoleDialog = true
                     } else {
                         Toast.makeText(context, "Укажите все точки маршрута и убедитесь, что данные компании загружены", Toast.LENGTH_LONG).show()
                         Log.w("SearchScreen","Error: Missing data. Start: $startPoint, End: $endPoint, User: $currentUser, Company: $userCompanyData")
@@ -282,9 +273,9 @@ fun SearchScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp).height(50.dp),
                 enabled = startPoint != null && endPoint != null && currentUser != null && userCompanyData != null
             ) {
-                Text("Подтвердить маршрут") // Изменил текст кнопки
+                Text("Подтвердить маршрут")
             }
-            Spacer(modifier = Modifier.height(70.dp)) // Отступ для BottomBar
+            Spacer(modifier = Modifier.height(70.dp))
         }
 
         if (locationPermissionsState.allPermissionsGranted) {
@@ -293,12 +284,13 @@ fun SearchScreen(
                     userLocationLayer?.cameraPosition()?.let { currentPosition ->
                         if (tripDirection == TripDirection.TO_WORK) {
                             startPoint = currentPosition.target
-                            mapView.map.move(
-                                CameraPosition(startPoint!!, 15.0f, 0.0f, 0.0f),
-                                Animation(Animation.Type.SMOOTH, 0.5f), null
-                            )
-                        } else { // FROM_WORK
-                            // Центрируем карту на текущем местоположении, но не меняем startPoint
+                            startPoint?.let { sp ->
+                                mapView.map.move(
+                                    CameraPosition(sp, 15.0f, 0.0f, 0.0f),
+                                    Animation(Animation.Type.SMOOTH, 0.5f), null
+                                )
+                            }
+                        } else {
                             mapView.map.move(
                                 CameraPosition(currentPosition.target, 15.0f, 0.0f, 0.0f),
                                 Animation(Animation.Type.SMOOTH, 0.5f), null
@@ -309,15 +301,14 @@ fun SearchScreen(
                 },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(end = 16.dp, bottom = 86.dp) // bottom: 70 (отступ кнопки) + 16 (отступ FAB)
-                    .size(25.dp), // Уменьшенный размер
+                    .padding(end = 16.dp, bottom = 86.dp)
+                    .size(50.dp),
                 shape = CircleShape,
             ) {
                 Icon(painterResource(R.drawable.location), "Мое местоположение")
             }
         }
     }
-
 
     if (showRoleDialog) {
         AlertDialog(
@@ -327,7 +318,7 @@ fun SearchScreen(
                 Column {
                     Text("Выберите вашу роль:")
                     Spacer(modifier = Modifier.height(8.dp))
-                    Row { /* ... RadioButtons ... */
+                    Row {
                         RadioButton(selected = isDriverRole, onClick = { isDriverRole = true })
                         Text("Водитель", Modifier.padding(start = 4.dp).align(Alignment.CenterVertically))
                         Spacer(modifier = Modifier.width(16.dp))
@@ -365,11 +356,10 @@ fun SearchScreen(
                                 Toast.makeText(context, "Укажите корректное кол-во мест (1-8)", Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
-                            if (isDriverRole && price == null && priceInput.isNotBlank()){ // если цена введена но не парсится
+                            if (isDriverRole && price == null && priceInput.isNotBlank()){
                                 Toast.makeText(context, "Укажите корректную цену", Toast.LENGTH_SHORT).show()
                                 return@Button
                             }
-
 
                             tripViewModel.createTrip(
                                 userId = currentUserId,
@@ -379,17 +369,13 @@ fun SearchScreen(
                                 endLat = endPoint!!.latitude,
                                 endLon = endPoint!!.longitude,
                                 dateTimeMillis = selectedDateTime.timeInMillis,
-                                isToWork = (tripDirection == TripDirection.TO_WORK), // Передаем isToWork
+                                isToWork = (tripDirection == TripDirection.TO_WORK),
                                 isDriver = isDriverRole,
                                 seatsAvailable = seats,
                                 price = price
                             )
                             showRoleDialog = false
                             Toast.makeText(context, "Запрос на поездку создан!", Toast.LENGTH_SHORT).show()
-                            // Опционально: сбросить точки или перейти на TripScreen
-                            // startPoint = null
-                            // endPoint = null
-                            // updatePlacemarks(...)
                         } else {
                             Toast.makeText(context, "Ошибка: не все данные для создания поездки", Toast.LENGTH_SHORT).show()
                         }
@@ -403,7 +389,6 @@ fun SearchScreen(
     }
 }
 
-
 fun updatePlacemarks(
     collection: MapObjectCollection?,
     start: Point?,
@@ -415,7 +400,7 @@ fun updatePlacemarks(
 
     val startIcon = ImageProvider.fromResource(context, R.drawable.placemark_start)
     val endIcon = ImageProvider.fromResource(context, R.drawable.placemark_end)
-    val companyIcon = ImageProvider.fromResource(context, R.drawable.location)
+    val companyIcon = ImageProvider.fromResource(context, R.drawable.placemark_company)
 
     companyPointToDisplay?.let {
         collection?.addPlacemark(it, companyIcon)
@@ -432,6 +417,7 @@ fun updatePlacemarks(
         }
     }
 }
+
 
 
 @Composable

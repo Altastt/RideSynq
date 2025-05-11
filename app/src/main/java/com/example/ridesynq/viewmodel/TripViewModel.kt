@@ -3,28 +3,28 @@ package com.example.ridesynq.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.ridesynq.data.dao.TripDao         // Временно, для прямого доступа
-import com.example.ridesynq.data.dao.UserTripDao     // Временно, для прямого доступа
+import com.example.ridesynq.data.dao.TripDao
+import com.example.ridesynq.data.dao.UserTripDao
 import com.example.ridesynq.data.entities.Trip
 import com.example.ridesynq.data.entities.UserTrip
-// import com.example.ridesynq.data.repositories.TripRepository // Предпочтительно
-// import com.example.ridesynq.data.repositories.UserTripRepository // Предпочтительно
-import com.example.ridesynq.data.relations.TripWithUsers
+import com.example.ridesynq.data.relations.TripWithUsers // Убедись, что это то, что возвращает DAO
+// import com.example.ridesynq.data.repositories.TripRepository
+// import com.example.ridesynq.data.repositories.UserTripRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 class TripViewModel(
-    private val tripDao: TripDao,         // Замени на tripRepository
-    private val userTripDao: UserTripDao     // Замени на userTripRepository
-    // private val tripRepository: TripRepository,
-    // private val userTripRepository: UserTripRepository
+    private val tripDao: TripDao,
+    private val userTripDao: UserTripDao
 ) : ViewModel() {
-
-    // Пример Flow для отображения в TripScreen
-    // Это можно сделать более сложным, с фильтрацией и т.д.
-    // val activeTrips: Flow<List<TripWithUsers>> = tripRepository.getAllActiveTripsWithUsers() // Когда будет репозиторий
 
     sealed class CreateTripUiState {
         object Idle : CreateTripUiState()
@@ -34,6 +34,45 @@ class TripViewModel(
     }
     private val _createTripState = MutableStateFlow<CreateTripUiState>(CreateTripUiState.Idle)
     val createTripState = _createTripState.asStateFlow()
+
+
+    private val allRelevantTripsWithUsers: Flow<List<TripWithUsers>> =
+        tripDao.getAllActiveAndFutureTripsWithUsers()
+            .map { tripsWithUsers ->
+                val currentTimeMillis = Calendar.getInstance().timeInMillis
+                tripsWithUsers.filter { it.trip.datetime >= currentTimeMillis }
+            }
+
+
+    // Поездки, инициированные водителями
+    val driverInitiatedTrips: StateFlow<List<TripWithUsers>> =
+        allRelevantTripsWithUsers.map { trips ->
+            trips.filter { tripWithUsers ->
+                tripWithUsers.trip.driverId != null
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    // Поездки, инициированные пассажирами (запросы на поездку)
+    val passengerInitiatedTrips: StateFlow<List<TripWithUsers>> =
+        allRelevantTripsWithUsers.map { trips ->
+            trips.filter { tripWithUsers ->
+                tripWithUsers.trip.driverId == null // Если нет водителя, это запрос пассажира
+                // ИЛИ, если роль хранится в UserTrip:
+                // tripWithUsers.users.all { userInTrip ->
+                //    // Проверить, что все пользователи в этой поездке - пассажиры,
+                //    // или что создатель поездки - пассажир.
+                // }
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
 
     fun createTrip(
         userId: Int,
@@ -65,8 +104,8 @@ class TripViewModel(
                     status = "pending" // Начальный статус
                 )
 
-                // val tripId = tripRepository.insertTripAndGetId(newTrip)
-                val tripId = tripDao.insertTripAndGetId(newTrip) // Используем DAO напрямую (временно)
+
+                val tripId = tripDao.insertTripAndGetId(newTrip)
 
                 if (tripId > 0) {
                     val userTrip = UserTrip(
@@ -74,8 +113,8 @@ class TripViewModel(
                         tripId = tripId.toInt(),
                         role = if (isDriver) "driver" else "passenger"
                     )
-                    // userTripRepository.insertUserTrip(userTrip)
-                    userTripDao.insert(userTrip) // Используем DAO напрямую (временно)
+
+                    userTripDao.insert(userTrip)
 
                     Log.d("TripViewModel", "Поездка успешно создана: TripID $tripId, UserID $userId, Role: ${userTrip.role}")
                     _createTripState.value = CreateTripUiState.Success
@@ -96,17 +135,14 @@ class TripViewModel(
 
     // Функции для получения списков поездок (примеры)
     fun getMyDriverTrips(driverId: Int): Flow<List<TripWithUsers>> {
-        // return tripRepository.getTripsByDriver(driverId)
         return tripDao.getTripsByDriver(driverId) // Временно
     }
 
     fun getMyPassengerTrips(passengerId: Int): Flow<List<TripWithUsers>> {
-        // return tripRepository.getPassengerTripsForUser(passengerId)
         return tripDao.getPassengerTripsForUser(passengerId) // Временно
     }
 
     fun getAllActiveTrips(): Flow<List<TripWithUsers>> { // Или как ты хочешь их называть
-        // return tripRepository.getAllActiveTripsWithUsers()
         return tripDao.getAllActiveTripsWithUsers() // Временно
     }
 }

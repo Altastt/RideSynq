@@ -19,8 +19,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.ridesynq.models.NavigationItems
-
+import com.example.ridesynq.models.NavigationItems // Импортируем наш NavigationItems
 
 @Composable
 fun AnimatedBottomNavigationBar(
@@ -44,12 +43,14 @@ private fun BottomNavigationBar(navController: NavController) {
         NavigationItems.Profile,
     )
     NavigationBar(
-        modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 14.dp)
+        modifier = Modifier
+            .padding(start = 20.dp, end = 20.dp, bottom = 14.dp)
             .clip(RoundedCornerShape(percent = 30))
             .height(60.dp)
     ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
+
         items.forEach { screen ->
             NavigationBarItem(
                 icon = {
@@ -59,10 +60,13 @@ private fun BottomNavigationBar(navController: NavController) {
                         modifier = Modifier.size(28.dp)
                     )
                 },
-                selected = currentDestination?.hierarchy?.any { it.route == screen.baseRoute } == true,
+
+                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                 onClick = {
-                    navController.navigate(screen.baseRoute) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                    navController.navigate(screen.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
                         launchSingleTop = true
                         restoreState = true
                     }

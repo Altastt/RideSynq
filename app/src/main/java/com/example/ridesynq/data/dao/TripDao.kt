@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TripDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE) // Или ABORT, если ID не должен перезаписываться
-    suspend fun insertTripAndGetId(trip: Trip): Long // Возвращает rowId
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTripAndGetId(trip: Trip): Long
 
     @Transaction // Для загрузки Trip вместе с User (через UserTrip)
     @Query("SELECT * FROM trips WHERE company_id = :companyId ORDER BY datetime DESC")
@@ -23,6 +23,10 @@ interface TripDao {
     @Transaction
     @Query("SELECT * FROM trips WHERE status = 'pending' OR status = 'confirmed' ORDER BY datetime ASC")
     fun getAllActiveTripsWithUsers(): Flow<List<TripWithUsers>> // Или просто Flow<List<Trip>>
+
+    @Transaction
+    @Query("SELECT * FROM trips WHERE status = 'pending' OR status = 'confirmed' ORDER BY datetime ASC")
+    fun getAllActiveAndFutureTripsWithUsers(): Flow<List<TripWithUsers>>
 
     // Запрос для поездок конкретного водителя
     @Transaction
@@ -46,7 +50,6 @@ interface TripDao {
     suspend fun getTripById(tripId: Int): Trip?
     @Insert
     suspend fun insert(trip: Trip)
-
 
     @Delete
     suspend fun delete(trip: Trip)

@@ -45,45 +45,21 @@ fun RootNavigation(
 
         navigation(
             route = GraphRoute.MAIN,
-            startDestination = NavigationItems.Trip.baseRoute
+            startDestination = NavigationItems.Trip.route
         ) {
 
-            composable(NavigationItems.Trip.baseRoute) {
-                TripScreen()
+            composable(NavigationItems.Trip.route) {
+                TripScreen(navController = navController)
             }
-            val searchArguments = listOf(
-                navArgument(NavigationItems.Search.LAT_ARG) {
-                    type = NavType.StringType
-                    nullable = true
-                    defaultValue = "null"
-                },
-                navArgument(NavigationItems.Search.LON_ARG) {
-                    type = NavType.StringType
-                    nullable = true
-                    defaultValue = "null"
-                }
-            )
-            val searchDeepLink = listOf(navDeepLink {
-                uriPattern = "app://ridesynq/${NavigationItems.Search.baseRoute}/{${NavigationItems.Search.LAT_ARG}}/{${NavigationItems.Search.LON_ARG}}"
-            })
-            composable(
-                NavigationItems.Search.route,
-                arguments = searchArguments,
-                deepLinks = searchDeepLink
-            ) { backStackEntry ->
 
-                val latitudeString = backStackEntry.arguments?.getString(NavigationItems.Search.LAT_ARG)
-                val longitudeString = backStackEntry.arguments?.getString(NavigationItems.Search.LON_ARG)
-                val initialLatitude = if (latitudeString == "null") null else latitudeString?.toDoubleOrNull()
-                val initialLongitude = if (longitudeString == "null") null else longitudeString?.toDoubleOrNull()
+            composable(NavigationItems.Search.route) {
                 SearchScreen(
                     authViewModel = authVM,
-                    companyViewModel = companyVM,
-                    initialLatitude = initialLatitude,
-                    initialLongitude = initialLongitude
+                    companyViewModel = companyVM
                 )
             }
-            composable(NavigationItems.Profile.baseRoute) {
+
+            composable(NavigationItems.Profile.route) {
                 ProfileScreen(
                     navController = navController,
                     onThemeUpdated = onThemeUpdated,
@@ -91,18 +67,17 @@ fun RootNavigation(
                 )
             }
 
-            // Вложенный граф для экранов настроек
             settingsNavigation(
                 navController = navController,
                 authViewModel = authVM,
                 companyViewModel = companyVM,
                 settingsGraphRoute = GraphRoute.SETTINGS
             )
-        } // Конец графа GraphRoute.MAIN
-
-        // Граф админа и т.д. можно добавить здесь
-    } // Конец корневого NavHost
+        }
+    }
 }
+
+
 
 object GraphRoute {
     const val ROOT = "root_graph"
