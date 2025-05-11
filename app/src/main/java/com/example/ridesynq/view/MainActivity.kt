@@ -29,7 +29,6 @@ import com.example.ridesynq.viewmodel.CompanyViewModel
 import com.yandex.mapkit.MapKitFactory
 
 class MainActivity : ComponentActivity() {
-    // ... (репозитории и viewModels без изменений) ...
     private val appDatabase by lazy { AppDatabase.getDatabase(this) }
     private val userRepository by lazy { UserRepository(appDatabase.userDao(), appDatabase.companyDao()) }
     private val companyRepository by lazy { CompanyRepository(appDatabase.companyDao()) }

@@ -11,6 +11,7 @@ import com.example.ridesynq.data.dao.CompanyDao
 import com.example.ridesynq.data.dao.TripDao
 import com.example.ridesynq.data.dao.UserDao
 import com.example.ridesynq.data.entities.Company
+import com.example.ridesynq.data.dao.UserTripDao
 import com.example.ridesynq.data.entities.Post // Убедитесь, что Post используется или удалите
 import com.example.ridesynq.data.entities.Trip
 import com.example.ridesynq.data.entities.User
@@ -23,14 +24,15 @@ import com.example.ridesynq.data.entities.UserTrip // Убедитесь, что
         Trip::class,
         UserTrip::class
     ],
-    version = 4,
-    exportSchema = false // Можно установить true и изучить генерируемую схему
+    version = 5,
+    exportSchema = false
 )
 @TypeConverters(RoomConverters::class) // Убедитесь, что RoomConverters существуют и нужны
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun companyDao(): CompanyDao
     abstract fun tripDao(): TripDao
+    abstract fun userTripDao(): UserTripDao
 
     companion object {
         @Volatile
