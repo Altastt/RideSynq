@@ -1,6 +1,5 @@
 package com.example.ridesynq.viewmodel
 
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ridesynq.data.entities.Company
@@ -21,17 +20,10 @@ class CompanyViewModel(
     private val _selectedCompany = MutableStateFlow<Company?>(null)
     val selectedCompany: StateFlow<Company?> = _selectedCompany.asStateFlow()
 
+    // --- State for Map Target ---
     private val _mapTargetCoordinates = MutableStateFlow<Pair<Double, Double>?>(null)
     val mapTargetCoordinates: StateFlow<Pair<Double, Double>?> = _mapTargetCoordinates.asStateFlow()
-
-    fun setMapTarget(latitude: Double, longitude: Double) {
-        _mapTargetCoordinates.value = Pair(latitude, longitude)
-    }
-
-    fun consumeMapTarget() {
-        _mapTargetCoordinates.value = null
-    }
-    // ------------------------------------
+    // --------------------------
 
     suspend fun insertCompanyAndGetId(company: Company): Long? {
         return try {
@@ -50,11 +42,23 @@ class CompanyViewModel(
             return
         }
         viewModelScope.launch {
-            _selectedCompany.value = null
+            _selectedCompany.value = null // Clear previous before loading
             val company = withContext(Dispatchers.IO) {
                 companyRepository.getCompanyById(companyId)
             }
             _selectedCompany.value = company
         }
     }
+
+    // --- Function to set the target for the map ---
+    fun setMapTarget(latitude: Double, longitude: Double) {
+        _mapTargetCoordinates.value = Pair(latitude, longitude)
+    }
+    // --------------------------------------------
+
+    // --- Function to clear the target after it's used ---
+    fun consumeMapTarget() {
+        _mapTargetCoordinates.value = null
+    }
+    // -------------------------------------------------
 }

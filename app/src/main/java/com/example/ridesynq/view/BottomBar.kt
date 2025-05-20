@@ -26,11 +26,7 @@ fun AnimatedBottomNavigationBar(
     navController: NavController,
     bottomAppBarState: MutableState<Boolean>
 ) {
-    AnimatedVisibility(
-        visible = bottomAppBarState.value,
-        enter = slideInVertically(initialOffsetY = { it }),
-        exit = slideOutVertically(targetOffsetY = { it })
-    ) {
+    if (bottomAppBarState.value) {
         BottomNavigationBar(navController)
     }
 }

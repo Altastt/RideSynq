@@ -1,5 +1,6 @@
 package com.example.ridesynq.view
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -14,15 +15,17 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.ridesynq.R
 import com.example.ridesynq.data.entities.Company
+import com.example.ridesynq.models.NavigationItems
 import com.example.ridesynq.viewmodel.AuthVM
 import com.example.ridesynq.viewmodel.CompanyViewModel
+// No .toUri() import needed
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CompanyScreen(
     navController: NavController,
     authViewModel: AuthVM,
-    companyViewModel: CompanyViewModel
+    companyViewModel: CompanyViewModel // Receive the shared VM
 ) {
     val currentUser by authViewModel.currentUser.collectAsState()
     val selectedCompany by companyViewModel.selectedCompany.collectAsState()
@@ -56,14 +59,18 @@ fun CompanyScreen(
         ) {
             when {
                 selectedCompany != null -> {
-                    CompanyInfoCard(company = selectedCompany!!)
+                    // Pass companyViewModel to CompanyInfoCard
+                    CompanyInfoCard(
+                        company = selectedCompany!!,
+                        navController = navController, // Pass NavController
+                        companyViewModel = companyViewModel // Pass CompanyViewModel
+                    )
                 }
                 currentUser != null && selectedCompany == null -> {
                     Box(modifier = Modifier.fillMaxSize()) {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     }
                 }
-                // Сообщение, если пользователь или его компания не найдены
                 else -> {
                     Box(modifier = Modifier.fillMaxSize()) {
                         Text(
@@ -80,6 +87,8 @@ fun CompanyScreen(
 @Composable
 fun CompanyInfoCard(
     company: Company,
+    navController: NavController, // Add NavController
+    companyViewModel: CompanyViewModel // Add CompanyViewModel
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -95,6 +104,36 @@ fun CompanyInfoCard(
             CompanyInfoRow(label = stringResource(R.string.sign_up_company_inn), value = company.inn)
             CompanyInfoRow(label = stringResource(R.string.sign_up_company_kpp), value = company.kpp)
             CompanyInfoRow(label = stringResource(R.string.sign_up_company_ogrn), value = company.ogrn)
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    Log.d("CompanyScreen", "Location button clicked. Setting map target: ${company.latitude}, ${company.longitude}")
+                    // --- SET TARGET IN VIEWMODEL ---
+                    companyViewModel.setMapTarget(company.latitude, company.longitude)
+                    // -----------------------------
+
+                    Log.d("CompanyScreen", "Navigating to Search base route: ${NavigationItems.Search.route}")
+                    // --- NAVIGATE TO BASE ROUTE ---
+                    try {
+                        navController.navigate(NavigationItems.Search.route) {
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    } catch (e: Exception) {
+                        Log.e("CompanyScreen", "Navigation to SearchScreen failed", e)
+                    }
+                    // ----------------------------
+                },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Icon(
+                    Icons.Filled.LocationOn,
+                    contentDescription = null,
+                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                )
+                Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                Text(stringResource(R.string.show_location))
+            }
         }
     }
 }
@@ -114,4 +153,3 @@ fun CompanyInfoRow(label: String, value: String?) {
         )
     }
 }
-

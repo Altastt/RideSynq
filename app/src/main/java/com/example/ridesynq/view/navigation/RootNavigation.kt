@@ -3,14 +3,12 @@ package com.example.ridesynq.view.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier // << Импорт Modifier
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
+// NavType, navArgument, navDeepLink are no longer needed here for SearchScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
-import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
 import com.example.ridesynq.models.NavigationItems
 import com.example.ridesynq.view.AddCarScreen
@@ -32,7 +30,7 @@ fun RootNavigation(
     navController: NavHostController,
     onThemeUpdated: () -> Unit,
     authVM: AuthVM,
-    companyVM: CompanyViewModel
+    companyVM: CompanyViewModel // Pass the activity-scoped VM
 ) {
     NavHost(
         navController = navController,
@@ -45,21 +43,23 @@ fun RootNavigation(
 
         navigation(
             route = GraphRoute.MAIN,
-            startDestination = NavigationItems.Trip.route
+            startDestination = NavigationItems.Trip.route // Use simple route
         ) {
 
-            composable(NavigationItems.Trip.route) {
-                TripScreen(navController = navController)
+            composable(NavigationItems.Trip.route) { // Use simple route
+                TripScreen(navController = navController) // Pass NavController if TripScreen needs it
             }
 
-            composable(NavigationItems.Search.route) {
+            // --- Simplified SearchScreen Composable ---
+            composable(NavigationItems.Search.route) { // Use simple route
                 SearchScreen(
                     authViewModel = authVM,
-                    companyViewModel = companyVM
+                    companyViewModel = companyVM // Pass down the shared VM
                 )
             }
+            // -----------------------------------------
 
-            composable(NavigationItems.Profile.route) {
+            composable(NavigationItems.Profile.route) { // Use simple route
                 ProfileScreen(
                     navController = navController,
                     onThemeUpdated = onThemeUpdated,
@@ -70,14 +70,12 @@ fun RootNavigation(
             settingsNavigation(
                 navController = navController,
                 authViewModel = authVM,
-                companyViewModel = companyVM,
+                companyViewModel = companyVM, // Pass shared VM
                 settingsGraphRoute = GraphRoute.SETTINGS
             )
-        }
-    }
+        } // Конец графа GraphRoute.MAIN
+    } // Конец корневого NavHost
 }
-
-
 
 object GraphRoute {
     const val ROOT = "root_graph"
@@ -87,11 +85,10 @@ object GraphRoute {
     const val ADMIN_MAIN = "admin_main_graph"
 }
 
-
 fun NavGraphBuilder.settingsNavigation(
     navController: NavHostController,
     authViewModel: AuthVM,
-    companyViewModel: CompanyViewModel,
+    companyViewModel: CompanyViewModel, // Accept shared VM
     settingsGraphRoute: String
 ) {
     navigation(
@@ -105,7 +102,7 @@ fun NavGraphBuilder.settingsNavigation(
             AddCarScreen(navController, authViewModel)
         }
         composable(SettingsScreen.RCompany.route) {
-            CompanyScreen(navController, authViewModel, companyViewModel)
+            CompanyScreen(navController, authViewModel, companyViewModel) // Pass it here
         }
         composable(SettingsScreen.EditProfile.route) {
             EditProfileScreen(navController, authViewModel)
