@@ -30,7 +30,7 @@ fun RootNavigation(
     navController: NavHostController,
     onThemeUpdated: () -> Unit,
     authVM: AuthVM,
-    companyVM: CompanyViewModel // Pass the activity-scoped VM
+    companyVM: CompanyViewModel
 ) {
     NavHost(
         navController = navController,
@@ -47,7 +47,7 @@ fun RootNavigation(
         ) {
 
             composable(NavigationItems.Trip.route) { // Use simple route
-                TripScreen(navController = navController) // Pass NavController if TripScreen needs it
+                TripScreen(navController = navController, authViewModel = authVM) // Pass NavController if TripScreen needs it
             }
 
             // --- Simplified SearchScreen Composable ---

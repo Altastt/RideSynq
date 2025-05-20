@@ -15,8 +15,8 @@ class TripRepository(private val tripDao: TripDao) {
         return tripDao.getTripsByCompany(companyId)
     }
 
-    fun getAllActiveTripsWithUsers(): Flow<List<TripWithUsers>> {
-        return tripDao.getAllActiveTripsWithUsers()
+    fun getAllActiveAndFutureTripsWithUsers(): Flow<List<TripWithUsers>> { // Переименован для соответствия DAO
+        return tripDao.getAllActiveAndFutureTripsWithUsers()
     }
 
     fun getTripsByDriver(driverId: Int): Flow<List<TripWithUsers>> {

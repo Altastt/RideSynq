@@ -7,14 +7,13 @@ import com.example.ridesynq.data.dao.UserTripDao
 
 class TripVMFactory(
     private val tripDao: TripDao,
-    private val userTripDao: UserTripDao
-
+    private val userTripDao: UserTripDao,
+    private val authVM: AuthVM // Добавляем AuthVM
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(TripViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return TripViewModel(tripDao, userTripDao) as T
-            // return TripViewModel(tripRepository, userTripRepository) as T
+            return TripViewModel(tripDao, userTripDao, authVM) as T // Передаем AuthVM
         }
         throw IllegalArgumentException("Unknown ViewModel class for Trip")
     }

@@ -92,7 +92,7 @@ fun SearchScreen(
 
     val appDatabase = AppDatabase.getDatabase(context)
     val tripViewModel: TripViewModel = viewModel(
-        factory = TripVMFactory(appDatabase.tripDao(), appDatabase.userTripDao())
+        factory = TripVMFactory(appDatabase.tripDao(), appDatabase.userTripDao(), authViewModel)
     )
 
     val targetCoordsFromVM by companyViewModel.mapTargetCoordinates.collectAsState()
